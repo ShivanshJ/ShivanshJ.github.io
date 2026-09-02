@@ -223,6 +223,13 @@ a.dw-chip-link:hover {
 .dw-prose p { margin: 0 0 12px 0; }
 .dw-prose p:last-child { margin-bottom: 0; }
 .dw-prose strong { color: #FFFFFF; font-weight: 600; }
+/* Manual highlight — wrap a metric or key phrase in <b>…</b> in the MDX
+   and it pops in accent blue with tabular numerals. */
+.dw-prose b {
+  color: var(--accent);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Chapter subheading: a paragraph containing only a bold phrase
    (e.g. **2023 → 2025 · Senior Product Engineer**) becomes a proper
@@ -256,14 +263,6 @@ a.dw-chip-link:hover {
 }
 .dw-prose a:hover { text-decoration-color: var(--accent); }
 
-/* Auto-highlighted metrics inside bullets (e.g. "$610k", "35%", "180 TPS")
-   — added by scripts/highlight-prose.ts */
-.dw-hl {
-  color: var(--accent);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 
 /* --- Mobile tweaks --------------------------------------------------- */
 @media (max-width: 768px) {
