@@ -17,7 +17,7 @@ const endpoint = site.analyticsEndpoint;
       <section class="dw-adm-panel">
         <h4 class="dw-adm-title">by campaign</h4>
         <table id="dw-adm-tbl-campaign"><thead>
-          <tr><th>campaign</th><th class="n">hits</th><th class="n">uniq</th><th>first</th><th>last</th></tr>
+          <tr><th>campaign</th><th class="n">hits</th><th class="n">uniq</th><th>first</th><th>last</th><th></th></tr>
         </thead><tbody></tbody></table>
       </section>
 
@@ -158,6 +158,28 @@ const endpoint = site.analyticsEndpoint;
     text-align: center;
     padding: 12px;
   }
+  .dw-adm-del {
+    background: transparent;
+    border: 0;
+    color: #FF3B30;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 120ms ease, background 120ms ease, transform 120ms ease;
+  }
+  .dw-adm-del:hover {
+    opacity: 1;
+    background: rgba(255, 59, 48, 0.14);
+    transform: scale(1.1);
+  }
+  .dw-adm-del[disabled] { opacity: 0.2; cursor: not-allowed; }
 </style>
 
 <script define:vars={{ endpoint }}>
@@ -218,33 +240,60 @@ const endpoint = site.analyticsEndpoint;
       }
     };
 
-    openIt();
-    setStatus('loading…');
+    const escapeAttr = (s) => String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
-    fetch(`${endpoint}/stats?key=${encodeURIComponent(key)}`, { mode: 'cors' })
-      .then(async (r) => {
-        if (r.status === 401) throw new Error('bad admin key');
+    const deleteCampaign = async (name) => {
+      if (!confirm(`Delete ALL hits for campaign "${name}"? This can't be undone.`)) return;
+      setStatus(`deleting "${name}"…`);
+      try {
+        const r = await fetch(`${endpoint}/delete?key=${encodeURIComponent(key)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaign: name }),
+          mode: 'cors',
+        });
         if (!r.ok) throw new Error(`worker ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        setStatus('connected', 'ok');
-        totals.hidden = false;
-        grid.hidden = false;
+        const data = await r.json();
+        setStatus(`deleted ${data.deleted} rows from "${name}" — refreshing…`, 'ok');
+        loadStats();
+      } catch (err) {
+        setStatus(`delete failed: ${err.message}`, 'err');
+      }
+    };
 
-        totals.innerHTML = `
-          <div class="dw-adm-tot"><div class="dw-adm-tot-value">${data.totals.total ?? 0}</div><div class="dw-adm-tot-label">total hits</div></div>
-          <div class="dw-adm-tot"><div class="dw-adm-tot-value">${data.totals.uniques ?? 0}</div><div class="dw-adm-tot-label">unique visitors</div></div>
-          <div class="dw-adm-tot"><div class="dw-adm-tot-value">${data.by_campaign.filter((c) => c.campaign !== '(no campaign)').length}</div><div class="dw-adm-tot-label">campaigns tracked</div></div>
-        `;
+    const loadStats = () => {
+      fetch(`${endpoint}/stats?key=${encodeURIComponent(key)}`, { mode: 'cors' })
+        .then(async (r) => {
+          if (r.status === 401) throw new Error('bad admin key');
+          if (!r.ok) throw new Error(`worker ${r.status}`);
+          return r.json();
+        })
+        .then((data) => {
+          setStatus('connected', 'ok');
+          totals.hidden = false;
+          grid.hidden = false;
 
-        setRows('dw-adm-tbl-campaign', data.by_campaign, [
-          { val: (r) => `<span class="hi">${r.campaign}</span>` },
-          { val: (r) => r.hits,    cls: 'n' },
-          { val: (r) => r.uniques, cls: 'n' },
-          { val: (r) => fmtTs(r.first_seen) },
-          { val: (r) => fmtTs(r.last_seen) },
-        ]);
+          totals.innerHTML = `
+            <div class="dw-adm-tot"><div class="dw-adm-tot-value">${data.totals.total ?? 0}</div><div class="dw-adm-tot-label">total hits</div></div>
+            <div class="dw-adm-tot"><div class="dw-adm-tot-value">${data.totals.uniques ?? 0}</div><div class="dw-adm-tot-label">unique visitors</div></div>
+            <div class="dw-adm-tot"><div class="dw-adm-tot-value">${data.by_campaign.filter((c) => c.campaign !== '(no campaign)').length}</div><div class="dw-adm-tot-label">campaigns tracked</div></div>
+          `;
+
+          setRows('dw-adm-tbl-campaign', data.by_campaign, [
+            { val: (r) => `<span class="hi">${r.campaign}</span>` },
+            { val: (r) => r.hits,    cls: 'n' },
+            { val: (r) => r.uniques, cls: 'n' },
+            { val: (r) => fmtTs(r.first_seen) },
+            { val: (r) => fmtTs(r.last_seen) },
+            { val: (r) => r.campaign === '(no campaign)'
+                ? ''
+                : `<button class="dw-adm-del" data-del="${escapeAttr(r.campaign)}" title="delete all hits for ${escapeAttr(r.campaign)}" aria-label="delete campaign ${escapeAttr(r.campaign)}">×</button>` },
+          ]);
+
+          // Wire up delete buttons (fresh set each render)
+          document.querySelectorAll('#dw-adm-tbl-campaign [data-del]').forEach((btn) => {
+            btn.addEventListener('click', () => deleteCampaign(btn.getAttribute('data-del')));
+          });
         setRows('dw-adm-tbl-country',  data.by_country,  [{ val: (r) => r.country }, { val: (r) => r.n, cls: 'n' }]);
         setRows('dw-adm-tbl-browser',  data.by_browser,  [{ val: (r) => r.browser }, { val: (r) => r.n, cls: 'n' }]);
         setRows('dw-adm-tbl-os',       data.by_os,       [{ val: (r) => r.os },      { val: (r) => r.n, cls: 'n' }]);
@@ -256,7 +305,12 @@ const endpoint = site.analyticsEndpoint;
           { val: (r) => `${r.browser} / ${r.os}` },
           { val: (r) => fmtRef(r.referrer) },
         ]);
-      })
-      .catch((err) => setStatus(`error: ${err.message}`, 'err'));
+        })
+        .catch((err) => setStatus(`error: ${err.message}`, 'err'));
+    };
+
+    openIt();
+    setStatus('loading…');
+    loadStats();
   }
 </script>

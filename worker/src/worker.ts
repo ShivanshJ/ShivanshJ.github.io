@@ -63,7 +63,7 @@ export default {
       try { body = await req.json(); } catch { /* empty body OK */ }
 
       const cf: any = (req as any).cf ?? {};
-      // Skip Cloudflare-flagged bots so the numbers stay honest.
+      // Drop Cloudflare-flagged bots so the numbers stay honest.
       if (cf.bot === true) {
         return new Response(null, { status: 204, headers: cors });
       }
@@ -147,6 +147,30 @@ export default {
         by_referrer: byReferrer.results,
         recent: recent.results,
       }, { headers: cors });
+    }
+
+    // --- POST /delete?key=... ------------------------------------------
+    // Body: { campaign: string }  → deletes all hit rows for that campaign.
+    // Gated by the admin token, same as /stats.
+    if (req.method === 'POST' && url.pathname === '/delete') {
+      const key = url.searchParams.get('key');
+      if (!key || key !== env.ADMIN_TOKEN) {
+        return new Response('unauthorized', { status: 401, headers: cors });
+      }
+      let body: any = {};
+      try { body = await req.json(); } catch { /* empty body */ }
+      const camp = truncate(body.campaign ?? null, 64);
+      if (!camp) {
+        return new Response('missing campaign', { status: 400, headers: cors });
+      }
+      try {
+        const res = await env.DB.prepare(
+          `DELETE FROM hits WHERE campaign = ?`
+        ).bind(camp).run();
+        return Response.json({ deleted: res.meta?.changes ?? 0, campaign: camp }, { headers: cors });
+      } catch (e) {
+        return new Response(`db error: ${e}`, { status: 500, headers: cors });
+      }
     }
 
     return new Response('not found', { status: 404, headers: cors });

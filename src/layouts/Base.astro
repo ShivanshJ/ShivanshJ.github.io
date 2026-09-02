@@ -39,14 +39,25 @@ const {
       import '../scripts/highlight-prose.ts';
     </script>
     <script define:vars={{ analyticsEndpoint: site.analyticsEndpoint }}>
-      // Beacon inlined so the endpoint URL can come from src/data/site.ts
-      // at build time (no separate constant to keep in sync).
+      // Beacon inlined so the endpoint URL comes from src/data/site.ts.
+      //
+      // Model: one hit per browser, EVER. On first successful hit we set
+      // the DNT flag so no further visits from this browser count.
+      // The DB records "unique people who visited + which link they
+      // arrived on."
+      //
+      // ?cmp=<anything> is recorded as-is (raw marketing tracking) —
+      // whatever value someone shows up with is what gets counted.
+      // No ?cmp param → recorded as 'main-page'.
       (() => {
         const params = new URLSearchParams(location.search);
         if (params.get('dnt') === '1') { localStorage.setItem('dnt', '1'); return; }
         if (localStorage.getItem('dnt') === '1') return;
-        // Viewing your own admin panel shouldn't count as a hit.
-        if (params.has('admin')) return;
+        if (params.has('admin')) return;   // own admin panel visit
+
+        const raw = params.get('cmp') || params.get('campaign');
+        const campaign = (raw && raw.trim()) ? raw.trim().slice(0, 64) : 'main-page';
+
         let sid = localStorage.getItem('sid');
         if (!sid) {
           sid = (crypto && crypto.randomUUID)
@@ -54,7 +65,6 @@ const {
             : Math.random().toString(36).slice(2) + Date.now().toString(36);
           localStorage.setItem('sid', sid);
         }
-        const campaign = params.get('cmp') || params.get('campaign') || null;
         const referrer = document.referrer || null;
         fetch(`${analyticsEndpoint}/hit`, {
           method: 'POST',
@@ -62,6 +72,10 @@ const {
           body: JSON.stringify({ campaign, session_id: sid, referrer }),
           keepalive: true,
           mode: 'cors',
+        }).then((r) => {
+          // Only permanently mute if the beacon actually landed. If the
+          // worker is down, we'll try again on the next visit.
+          if (r && r.status === 204) localStorage.setItem('dnt', '1');
         }).catch(() => {});
       })();
     </script>
