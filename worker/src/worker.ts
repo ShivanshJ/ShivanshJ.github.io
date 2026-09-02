@@ -102,7 +102,7 @@ export default {
         return new Response('unauthorized', { status: 401, headers: cors });
       }
 
-      const [totalsRes, byCampaign, byCountry, byBrowser, byOs, byReferrer, recent] = await Promise.all([
+      const [totalsRes, byCampaign, byCountry, byBrowser, byOs, byDevice, byReferrer, recent] = await Promise.all([
         env.DB.prepare(
           `SELECT COUNT(*) AS total, COUNT(DISTINCT session_id) AS uniques FROM hits`
         ).first(),
@@ -128,6 +128,11 @@ export default {
            GROUP BY os ORDER BY n DESC`
         ).all(),
         env.DB.prepare(
+          `SELECT device, COUNT(*) AS n FROM hits
+           WHERE device IS NOT NULL
+           GROUP BY device ORDER BY n DESC`
+        ).all(),
+        env.DB.prepare(
           `SELECT referrer, COUNT(*) AS n FROM hits
            WHERE referrer IS NOT NULL AND referrer <> ''
            GROUP BY referrer ORDER BY n DESC LIMIT 15`
@@ -144,6 +149,7 @@ export default {
         by_country: byCountry.results,
         by_browser: byBrowser.results,
         by_os: byOs.results,
+        by_device: byDevice.results,
         by_referrer: byReferrer.results,
         recent: recent.results,
       }, { headers: cors });

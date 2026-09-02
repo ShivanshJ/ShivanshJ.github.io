@@ -42,6 +42,13 @@ const endpoint = site.analyticsEndpoint;
         </thead><tbody></tbody></table>
       </section>
 
+      <section class="dw-adm-panel">
+        <h4 class="dw-adm-title">by device</h4>
+        <table id="dw-adm-tbl-device"><thead>
+          <tr><th>device</th><th class="n">n</th></tr>
+        </thead><tbody></tbody></table>
+      </section>
+
       <section class="dw-adm-panel dw-adm-panel-wide">
         <h4 class="dw-adm-title">top referrers</h4>
         <table id="dw-adm-tbl-referrer"><thead>
@@ -299,6 +306,7 @@ const endpoint = site.analyticsEndpoint;
         setRows('dw-adm-tbl-country',  data.by_country,  [{ val: (r) => r.country }, { val: (r) => r.n, cls: 'n' }]);
         setRows('dw-adm-tbl-browser',  data.by_browser,  [{ val: (r) => r.browser }, { val: (r) => r.n, cls: 'n' }]);
         setRows('dw-adm-tbl-os',       data.by_os,       [{ val: (r) => r.os },      { val: (r) => r.n, cls: 'n' }]);
+        setRows('dw-adm-tbl-device',   data.by_device,   [{ val: (r) => r.device },  { val: (r) => r.n, cls: 'n' }]);
         setRows('dw-adm-tbl-referrer', data.by_referrer, [{ val: (r) => fmtRef(r.referrer) }, { val: (r) => r.n, cls: 'n' }]);
         setRows('dw-adm-tbl-recent',   data.recent,      [
           { val: (r) => fmtTs(r.ts) },
