@@ -12,6 +12,10 @@ export const site = {
   linkedin: 'https://linkedin.com/in/ShivanshJ',
 
   themeColor: '#232323',
+
+  // Cloudflare Worker that records hits and serves /stats.
+  // Update this after `wrangler deploy` prints the live URL.
+  analyticsEndpoint: 'https://portfolio-hits.portfolio-shivanshj.workers.dev',
 } as const;
 
 export const seo = {

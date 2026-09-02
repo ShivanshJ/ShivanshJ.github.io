@@ -1,0 +1,16 @@
+name = "portfolio-hits"
+main = "src/worker.ts"
+compatibility_date = "2026-01-01"
+workers_dev = true                    # publish to *.workers.dev subdomain
+
+# Fill in the database_id after running:
+#   wrangler d1 create portfolio-hits
+[[d1_databases]]
+binding = "DB"
+database_name = "portfolio-hits"
+database_id = "a0eaf3fe-23f6-43e8-bb60-4483a2ba49b7"
+
+# Public config — safe to commit. ADMIN_TOKEN is NOT here on purpose;
+# it lives as an encrypted secret (set via `wrangler secret put`).
+[vars]
+ALLOWED_ORIGIN = "https://shivanshj.github.io,http://localhost:4321,http://localhost:3000"
