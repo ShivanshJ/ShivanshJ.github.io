@@ -43,6 +43,8 @@ const playOpenSound = () => {
 // Work sidebar's row-click handler) can reuse it without re-implementing
 // the WebAudio boilerplate or importing across Astro scoped scripts.
 (window as any).__dwChirp = playOpenSound;
+// __dwOpen is exposed further down, AFTER openWindow is declared, to
+// avoid a temporal-dead-zone ReferenceError on script load.
 
 const bringToFront = (win: HTMLElement) => {
   zTop += 1;
@@ -94,8 +96,14 @@ const openWindow = (id: string, sourceEl?: HTMLElement) => {
   // Only reposition on a fresh open — don't yank a window a user is already
   // looking at just because they clicked its dock icon again.
   if (!wasOpen) {
-    if (id === 'readme') centerWindow(win);
-    else randomizeWindow(win);
+    if (win.dataset.openFullscreen === 'true') {
+      // Windows marked fullscreen (e.g. Blog) open maximized.
+      if (win.dataset.maximized !== 'true') maximizeWindow(id);
+    } else if (id === 'readme') {
+      centerWindow(win);
+    } else {
+      randomizeWindow(win);
+    }
   }
 
   win.classList.remove('is-minimizing');
@@ -110,6 +118,11 @@ const openWindow = (id: string, sourceEl?: HTMLElement) => {
     setTimeout(() => sourceEl.classList.remove('is-bouncing'), 500);
   }
 };
+
+// Deep-link entry point for pages like /blog that need to auto-open a
+// specific window on load. Placed AFTER openWindow's const declaration
+// so we don't trip the temporal dead zone.
+(window as any).__dwOpen = openWindow;
 
 const closeWindow = (id: string) => {
   const win = document.getElementById(`dw-window-${id}`);

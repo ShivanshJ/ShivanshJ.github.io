@@ -63,7 +63,7 @@ const { entries } = Astro.props;
     flex-direction: column;
     border-right: 1px solid var(--border);
     background: rgba(255, 255, 255, 0.015);
-    padding: 16px 0 12px;
+    padding: 16px 0 0;
     overflow-y: auto;
   }
   .dw-work-sidebar-title {
@@ -141,9 +141,10 @@ const { entries } = Astro.props;
     letter-spacing: 0.06em;
   }
   .dw-work-sidebar-count {
-    margin: 12px 16px 0;
-    padding-top: 10px;
+    margin: 12px 0 0;
+    padding: 10px 16px 12px;
     border-top: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.015);
     font-family: "Geist Mono Variable", ui-monospace, monospace;
     font-size: 10px;
     text-transform: uppercase;

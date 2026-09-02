@@ -1,0 +1,29 @@
+---
+// Deep-link route: /blog renders the whole desktop but auto-opens the
+// Blog window on load. Same static build as / — no server needed.
+import Base from '../layouts/Base.astro';
+import Desktop from '../components/Desktop.astro';
+---
+<Base title="Blog — Shivansh Jagga" description="Long-form writing on probability, systems, and design.">
+  <Desktop />
+</Base>
+
+<script>
+  // desktop.ts exposes __dwOpen; wait for it to attach, then open the
+  // Blog window. Polls briefly rather than assuming load order.
+  (() => {
+    const tryOpen = (attempts: number) => {
+      const open = (window as any).__dwOpen;
+      if (typeof open === 'function') {
+        open('blog');
+        return;
+      }
+      if (attempts > 0) setTimeout(() => tryOpen(attempts - 1), 30);
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => tryOpen(20));
+    } else {
+      tryOpen(20);
+    }
+  })();
+</script>

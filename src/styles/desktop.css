@@ -296,3 +296,188 @@ a.dw-chip-link:hover {
   .dw-adm-tot-value { font-size: 22px !important; }
   .dw-adm table { font-size: 11px !important; min-width: 320px; }
 }
+
+/* --- Blog topic pill (small mono tag alongside date/reading time) --- */
+.dw-blog-topic-pill {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 4px;
+  font-family: "Geist Mono Variable", ui-monospace, monospace;
+  font-size: 9px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  background: rgba(76, 139, 245, 0.10);
+  border: 1px solid rgba(76, 139, 245, 0.28);
+  border-radius: 3px;
+  padding: 3px 6px 2px;
+  vertical-align: baseline;
+}
+
+/* --- Blog reading prose (editorial serif for long-form) ------------- */
+.dw-blog-prose {
+  max-width: 68ch;
+  margin: 0 auto;
+  font-family: "Charter", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: 18px;
+  line-height: 1.72;
+  color: rgba(255, 255, 255, 0.90);
+}
+.dw-blog-prose p {
+  margin: 0 0 1.2em;
+  text-wrap: pretty;
+  hanging-punctuation: first;
+}
+.dw-blog-prose p:last-child { margin-bottom: 0; }
+.dw-blog-prose h1,
+.dw-blog-prose h2,
+.dw-blog-prose h3,
+.dw-blog-prose h4 {
+  font-family: "Charter", "Iowan Old Style", Georgia, serif;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 2em 0 0.5em;
+}
+.dw-blog-prose h2 { font-size: 26px; }
+.dw-blog-prose h3 { font-size: 21px; }
+.dw-blog-prose h4 { font-size: 18px; }
+.dw-blog-prose h2::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  margin-right: 12px;
+  vertical-align: 0.15em;
+}
+
+.dw-blog-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(76, 139, 245, 0.4);
+  text-underline-offset: 3px;
+}
+.dw-blog-prose a:hover { text-decoration-color: var(--accent); }
+
+.dw-blog-prose strong { color: #FFFFFF; font-weight: 700; }
+.dw-blog-prose em { color: rgba(255, 255, 255, 0.95); }
+.dw-blog-prose b {
+  color: var(--accent);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dw-blog-prose ul,
+.dw-blog-prose ol {
+  margin: 0 0 1.2em;
+  padding-left: 1.6em;
+}
+.dw-blog-prose li {
+  margin: 0 0 0.5em;
+  text-wrap: pretty;
+}
+.dw-blog-prose ul li::marker { color: var(--accent); }
+
+.dw-blog-prose blockquote {
+  margin: 1.5em 0;
+  padding: 0.4em 0 0.4em 1.4em;
+  border-left: 3px solid var(--accent);
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.dw-blog-prose code {
+  font-family: "Geist Mono Variable", ui-monospace, Menlo, monospace;
+  font-size: 0.88em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+}
+.dw-blog-prose pre {
+  margin: 1.5em 0;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.dw-blog-prose pre code {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0;
+  font-size: inherit;
+}
+
+.dw-blog-prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5em auto;
+  border: 1px solid var(--border);
+  /* If we adopt the 1-bit dither filter later, add:
+     filter: url(#dither-1bit); */
+}
+
+.dw-blog-prose hr {
+  border: 0;
+  height: 1px;
+  background: var(--border);
+  margin: 2em 0;
+}
+
+.dw-blog-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.95em;
+  border: 1px solid var(--border);
+}
+.dw-blog-prose thead {
+  background: rgba(76, 139, 245, 0.06);
+}
+.dw-blog-prose th,
+.dw-blog-prose td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.dw-blog-prose th {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+.dw-blog-prose th + th,
+.dw-blog-prose td + td {
+  border-left: 1px solid var(--border);
+}
+.dw-blog-prose tbody tr:last-child td { border-bottom: 0; }
+
+.dw-blog-prose > :first-child { margin-top: 0; }
+
+/* Mobile blog: sidebar becomes a horizontal strip like Work */
+@media (max-width: 768px) {
+  .dw-blog {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto 1fr !important;
+    margin: -12px -12px !important;
+  }
+  .dw-blog-sidebar {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 12px 0 8px !important;
+    max-height: 40vh;
+  }
+  .dw-blog-sidebar-list { max-height: none; }
+  .dw-blog-reader {
+    padding: 24px 20px 60px !important;
+  }
+  .dw-blog-prose { font-size: 16px; }
+  .dw-blog-post-title { font-size: 26px !important; }
+}

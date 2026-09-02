@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import BlogWindow from './windows/BlogWindow.astro';
 import MenuBar from './desktop/MenuBar.astro';
 import Dock from './desktop/Dock.astro';
 import DesktopIcon from './desktop/DesktopIcon.astro';
@@ -16,6 +17,10 @@ const workEntries = (await getCollection('work')).sort(
   (a, b) => a.data.order - b.data.order,
 );
 
+const blogEntries = (await getCollection('blog')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
 const signals: Signal[] = [
   { label: 'education',   title: 'Cornell University — MS, CS',    detail: '3.8 GPA · Merit Scholarship',                     year: '2022' },
   { label: 'startup',     title: 'Verda.ai',                       detail: 'Blockchain startup battling fake video & images', year: '2021', href: 'https://verda.ai' },
@@ -25,10 +30,11 @@ const signals: Signal[] = [
 ];
 
 const desktopIcons = [
-  { id: 'readme',  label: 'README.txt',   kind: 'doc'    as const },
   { id: 'work',    label: 'Work',         kind: 'folder' as const, badge: workEntries.length },
+  { id: 'blog',    label: 'Blog',         kind: 'folder' as const, badge: blogEntries.length },
   { id: 'signal',  label: 'Signal',       kind: 'folder' as const, badge: signals.length },
   { id: 'contact', label: 'Contact.txt',  kind: 'doc'    as const },
+  { id: 'readme',  label: 'README.txt',   kind: 'doc'    as const },
   { id: 'snake',   label: 'Snake',        kind: 'app'    as const, glyph: '🐍', color: '#22C55E' },
 ];
 ---
@@ -56,6 +62,7 @@ const desktopIcons = [
 <SignalWindow items={signals} />
 <ContactWindow />
 <SnakeWindow />
+<BlogWindow />
 <AdminWindow />
 
 <Dock />

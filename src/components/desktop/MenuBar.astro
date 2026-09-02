@@ -1,5 +1,6 @@
 ---
 // Translucent macOS-style menu bar pinned to the top of the viewport.
+import { site } from '../../data/site.ts';
 ---
 <div class="dw-menubar" role="menubar">
   <div class="dw-menubar-left">
@@ -19,6 +20,27 @@
     <span class="dw-menu-icon" aria-hidden="true">􀋚</span>
     <span class="dw-menu-icon" aria-hidden="true">􀹖</span>
     <span class="dw-menu-item" id="dw-clock">—</span>
+  </div>
+</div>
+
+<div class="dw-admin-modal" id="dw-admin-modal" hidden aria-hidden="true">
+  <div class="dw-admin-backdrop" data-admin-close></div>
+  <div class="dw-admin-box" role="dialog" aria-modal="true" aria-labelledby="dw-admin-label">
+    <label class="dw-admin-label" id="dw-admin-label" for="dw-admin-input">FOR ADMINS' EYES ONLY</label>
+    <form class="dw-admin-form" id="dw-admin-form" autocomplete="off">
+      <input
+        class="dw-admin-input"
+        id="dw-admin-input"
+        type="password"
+        name="token"
+        spellcheck="false"
+        autocapitalize="off"
+        autocomplete="off"
+        placeholder="paste token"
+      />
+      <button type="submit" class="dw-admin-submit">UNLOCK</button>
+    </form>
+    <div class="dw-admin-error" id="dw-admin-error" hidden>× invalid token</div>
   </div>
 </div>
 
@@ -62,7 +84,7 @@
     background: rgba(255, 255, 255, 0.12);
   }
   .dw-menu-item-bold { font-weight: 600; }
-  .dw-apple { padding: 4px 8px; display: inline-flex; align-items: center; }
+  .dw-apple { padding: 4px 8px; display: inline-flex; align-items: center; cursor: pointer; }
   .dw-menu-icon {
     padding: 3px 8px;
     font-size: 12px;
@@ -80,6 +102,96 @@
     #dw-clock { min-width: 0; font-size: 12px; padding: 3px 6px; }
     .dw-menu-item { padding: 3px 6px; }
   }
+
+  /* -- Admin unlock modal ------------------------------------------------ */
+  .dw-admin-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .dw-admin-modal[hidden] { display: none; }
+  .dw-admin-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .dw-admin-box {
+    position: relative;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    padding: 22px 22px 18px;
+    background: rgba(44, 44, 44, 0.95);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .dw-admin-label {
+    display: block;
+    font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .dw-admin-form {
+    display: flex;
+    gap: 8px;
+  }
+  .dw-admin-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    color: #fff;
+    font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+    font-size: 13px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 120ms, box-shadow 120ms;
+  }
+  .dw-admin-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(76, 139, 245, 0.25);
+  }
+  .dw-admin-submit {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 120ms, color 120ms;
+  }
+  .dw-admin-submit:hover,
+  .dw-admin-submit:focus-visible {
+    background: var(--accent);
+    color: #0b0b0b;
+    outline: none;
+  }
+  .dw-admin-submit:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .dw-admin-error {
+    margin-top: 10px;
+    font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+    font-size: 12px;
+    color: #ff5a5a;
+  }
 </style>
 
 <script>
@@ -94,4 +206,82 @@
   };
   tick();
   setInterval(tick, 1000 * 15);
+</script>
+
+<script define:vars={{ endpoint: site.analyticsEndpoint }}>
+  (() => {
+    const STORAGE_KEY = 'dw-admin-token';
+    const apple = document.querySelector('.dw-apple');
+    const modal = document.getElementById('dw-admin-modal');
+    const form = document.getElementById('dw-admin-form');
+    const input = document.getElementById('dw-admin-input');
+    const submit = form ? form.querySelector('.dw-admin-submit') : null;
+    const errEl = document.getElementById('dw-admin-error');
+    if (!apple || !modal || !form || !input || !errEl) return;
+
+    const goAdmin = (token) => {
+      window.location.href = '/?admin=' + encodeURIComponent(token);
+    };
+
+    const openModal = () => {
+      errEl.hidden = true;
+      input.value = '';
+      modal.hidden = false;
+      modal.setAttribute('aria-hidden', 'false');
+      try { if (typeof window.__dwChirp === 'function') window.__dwChirp(); } catch (_) {}
+      setTimeout(() => input.focus(), 0);
+    };
+
+    const closeModal = () => {
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      if (submit) submit.disabled = false;
+    };
+
+    apple.addEventListener('click', (e) => {
+      e.preventDefault();
+      let stored = null;
+      try { stored = localStorage.getItem(STORAGE_KEY); } catch (_) {}
+      if (stored) {
+        goAdmin(stored);
+        return;
+      }
+      openModal();
+    });
+
+    modal.addEventListener('click', (e) => {
+      const t = e.target;
+      if (t instanceof HTMLElement && t.hasAttribute('data-admin-close')) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.hidden) closeModal();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = (input.value || '').trim();
+      if (!token) return;
+      errEl.hidden = true;
+      if (submit) submit.disabled = true;
+      try {
+        const res = await fetch(
+          endpoint + '/stats?key=' + encodeURIComponent(token),
+          { mode: 'cors' }
+        );
+        if (res.ok) {
+          try { localStorage.setItem(STORAGE_KEY, token); } catch (_) {}
+          goAdmin(token);
+          return;
+        }
+        errEl.textContent = '× invalid token';
+        errEl.hidden = false;
+      } catch (_) {
+        errEl.textContent = '× network error';
+        errEl.hidden = false;
+      } finally {
+        if (submit) submit.disabled = false;
+      }
+    });
+  })();
 </script>

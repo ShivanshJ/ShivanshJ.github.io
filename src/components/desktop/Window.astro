@@ -7,6 +7,7 @@ export interface Props {
   width?: number;
   height?: number;
   open?: boolean;         // start open
+  fullscreen?: boolean;   // open at max size (fills viewport minus chrome)
 }
 const {
   id,
@@ -16,12 +17,14 @@ const {
   width = 640,
   height = 440,
   open = false,
+  fullscreen = false,
 } = Astro.props;
 ---
 <section
   class={`dw-window ${open ? 'is-open' : ''}`}
   id={`dw-window-${id}`}
   data-window-id={id}
+  data-open-fullscreen={fullscreen ? 'true' : undefined}
   style={`left:${x}px; top:${y}px; width:${width}px; height:${height}px;`}
   role="dialog"
   aria-label={title}
