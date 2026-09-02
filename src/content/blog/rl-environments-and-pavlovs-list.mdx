@@ -1,0 +1,31 @@
+---
+title: "Pavlov's List: the shortest GTM in RL environments"
+date: "2026-07-20"
+description: "A short note on RL environments as the new composable layer for agents, and why 2026 startups like Epsilab and Akhara are chasing Pavlov's List as their GTM."
+topic: "startups & tech"
+order: 1
+---
+
+I came across [Epsilab](https://epsilab.com/) and [Akhara](https://akhara.ai/) last week, and both got me thinking about the same thing: RL environments are quietly becoming the most interesting shape of company in 2026.
+
+Here is the whole idea in plain words.
+
+An **agent** is a thing that tries. An **environment** is a room that says "good" or "bad" after each try. A **probability tool** is what the agent uses to guess how good the next try will be, before it tries it.
+
+That's it. If you have those three, you have an agent that learns.
+
+Now the trick: you don't have to build all three. If you are making a chatbot agent, you can plug in a video model from one company, a voice model from another, and a **probability tool** that scores partial trajectories. The one thing you still need is a room — an environment — that can actually run what the agent proposes and score it. That room is the product.
+
+This is why the 2026 crop looks small and sharp. Epsilab and Akhara are not trying to be the agent. They are trying to be the room. A five-person team can build one good room. A frontier lab cannot easily build a thousand rooms, so they buy the rooms — or the scored data that falls out of them.
+
+**The GTM is almost embarrassingly simple: get on [Pavlov's List](https://pavlovs.info/).** Pavlov's List is the running index of RL-environment companies that the big labs watch. Most startups that land on it get inbound from OpenAI or one of its peers within a few weeks. This is not a hack; the labs have run out of internet to train on, and RL is where the next jumps come from. Being on the list is a legible signal that your room is real, scored, and reproducible.
+
+So the whole recipe for a 2026 environment startup fits on one hand:
+
+1. Pick a domain where "good" and "bad" can be written in code.
+2. Rent the video, voice, and vision models. Don't build them.
+3. Log every rollout. The dataset is the moat, not the sandbox.
+4. Publish a leaderboard.
+5. Wait for the email.
+
+The old wave tried to be the agent. This wave is trying to be the gym. It's a much smaller thing to build, and — as Feynman would probably point out — that's usually a sign it's the right thing.

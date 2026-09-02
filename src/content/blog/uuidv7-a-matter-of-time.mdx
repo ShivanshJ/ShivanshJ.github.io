@@ -3,7 +3,7 @@ title: "UUIDv7: a matter of time"
 date: "2026-05-06"
 description: "In distributed systems, generating unique identifiers without coordination is a solved problem — UUIDv4 has done it for decades. But randomness has a cost..."
 topic: "backend"
-order: 2
+order: 3
 ---
 
 In distributed systems, generating unique identifiers without coordination is a solved problem — UUIDv4 has done it for decades with 122 random bits. But randomness has a cost: inserts into B-tree indexes scatter across pages, cache locality dies, and "sort by ID" becomes meaningless. UUIDv7 fixes this by prefixing the identifier with a millisecond-precision Unix timestamp, followed by random bits.

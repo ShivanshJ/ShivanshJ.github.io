@@ -97,8 +97,16 @@ const openWindow = (id: string, sourceEl?: HTMLElement) => {
   // looking at just because they clicked its dock icon again.
   if (!wasOpen) {
     if (win.dataset.openFullscreen === 'true') {
-      // Windows marked fullscreen (e.g. Blog) open maximized.
-      if (win.dataset.maximized !== 'true') maximizeWindow(id);
+      // Auto-fullscreen: expand to fill the desktop but leave ~130px on
+      // the right so the desktop icon column stays visible. Does NOT
+      // flip win.dataset.maximized — the green traffic-light still
+      // behaves normally (toggles true fullscreen).
+      if (win.dataset.maximized !== 'true' && !isMobile()) {
+        win.style.left = '16px';
+        win.style.top = '40px';
+        win.style.width = 'calc(100vw - 140px)';
+        win.style.height = 'calc(100vh - 100px)';
+      }
     } else if (id === 'readme') {
       centerWindow(win);
     } else {

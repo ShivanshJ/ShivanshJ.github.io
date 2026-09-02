@@ -1,9 +1,9 @@
 ---
 title: "The JSON tax: why REST can't hit 1M req/sec"
-date: "2026-08-24"
+date: "2026-06-24"
 description: "Why your server can't do 1 million requests per second — and why the answer is almost always JSON, not the network."
 topic: "backend"
-order: 1
+order: 2
 ---
 
 A standard wire — the network interface card (NIC) that plugs your server into the network — supports a bandwidth of about **10 GbE** (10 gigabits per second), which works out to roughly **1 GB/sec** of actual data. A typical REST request is around 1KB. So on paper, 1KB × 1,000,000 requests = 1 GB/sec, which the wire can handle just fine. And yet almost no vanilla REST server hits 1M req/sec on a single box. Why does the CPU throttle with high requests?
