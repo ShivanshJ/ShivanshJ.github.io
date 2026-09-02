@@ -1,0 +1,48 @@
+---
+title: "Probability of success: False uniqueness bias"
+date: "2020-10-17"
+description: "It's very ideal to see that the path we choose, be it for success or anything else we try to achieve is unique, our own to follow..."
+topic: "science"
+order: 6
+---
+
+It's very ideal to see that the path we choose, be it for success or anything else we try to achieve is unique, our own to follow. An extreme example I see is when a person models their own idea/business on someone else's yet have a [false uniqueness bias](https://psychology.iresearchnet.com/social-psychology/social-cognition/false-uniqueness-bias/). It made me wonder to what extent such a thing can be actually be true.
+
+![Image result for false uniqueness bias](https://bcc-cuny.digication.com/files/Mb5d5a2f872d725d8bba2ffe49a93d2ec.png)
+
+This blog post is a naive mathematical approach I have adopted to dispel the fact that even our ways to success are in fact not as unique as we may feel they may be,such that at-least one other person apart from us is following it; thus, trying to prove the false uniqueness bias.
+
+Assuming the maximum number of unique path-ways to be successful is equal to the number of people in the world ,~7 billion (1 way to success for each person):
+
+$\mu=7,000,000,000$
+
+Let's take another assumption, that the path chosen is uniformly distributed across the $\mu$ number of ways. Let $success_i$ be the path of success the $i^{th}$ person chooses, such that $Pr\{success_i=r\}=1/\mu$ where $i,r=1,2,3....\mu$. What are the chances that at least two people choose the same path in a group of $k$ people ?
+
+The probability that two people don't choose the same path is:
+
+ $$1-\frac{1}{\mu} = \frac{999,999,999}{1,000,000,000} = 0.999999999$$,
+
+which makes sense, because this means that in 999,999,999 scenarios when comparing one person's path to another, they won't match. But with $k$ people, it would mean $\binom{k}{2}$ comparisons. That's a lot comparisons! And exponents have their own way of compounding! Iteratively applying the recurrence for $k$ people choosing a different path is :
+
+$$Pr\{A_k\}=1.(\frac{999,999,999}{1,000,000,000})(\frac{999,999,998}{1,000,000,000})....$$
+
+$$Pr\{A_k\}=1.(\frac{\mu-1}{\mu}).(\frac{\mu-2}{\mu}).(\frac{\mu-3}{\mu})....(\frac{\mu-k+1}{\mu})$$
+
+$$Pr\{A_k\}=1.(1-\frac{1}{\mu}).(1-\frac{2}{\mu})....(1-\frac{k-1}{\mu})$$
+
+Note: $$1+x \leq e^x$$
+
+$$Pr\{A_k\}\leq e^{\frac{-1}{\mu}}. e^{\frac{-2}{\mu}}. e^{\frac{-3}{\mu}}$$
+
+$$ = e^{-\sum_{i=1}^{k-1} i/n}$$
+
+$$ = e^{-k(k-1)/2n}$$
+$$ \leq e^{-k(k-1)/2n}$$
+
+So keeping the probability $p(k)=1$ ,i.e, ensuring that a minimum of two people in a group of \$k\$ people follow the same path, we get solving for k:
+
+$k= 140,738$
+
+In a population of 7 billion, for a mere randomly selected 140,800, i.e, ~$0.0002011\%$ of the population, min. 2 people will  always share the same path.
+
+Conclusion : False uniqueness bias, hence proved. Even in the case where we choose from 7,000,000,000 options randomly, we still end up sharing common paths.

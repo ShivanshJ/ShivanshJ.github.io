@@ -1,0 +1,79 @@
+---
+title: "Hypothesis to die for, an unbiased die?"
+date: "2020-02-04"
+description: "Is it possible that the dice (singular form: die) that we get with our monopoly game/other games is not within the rules of it being ..."
+topic: "science"
+order: 8
+---
+
+![](https://cdn.coolstuff.com/autogen/preset/aspectThumb/1200x900/5ac292ae280b354b8e3e0953acb2486e.jpg)
+
+Is it possible that the dice (singular form: die) that we get with our monopoly game/other games is not within the rules of it being called an *unbiased die*? Maybe not.
+
+Hypothesis : Die is unbiased
+
+![Image result for dice photography](https://thumbs.dreamstime.com/b/dice-falling-water-black-background-playing-visible-splash-air-bubbles-66286678.jpg)
+
+![Image result for dice](https://cdn.coolstuff.com/autogen/preset/aspectThumb/1200x900/5ac292ae280b354b8e3e0953acb2486e.jpg)
+
+To test this hypothesis, the first question that arises*(due to sheer lassitude)* is - what will be the minimum number of tests/throws to get enough data of statistical importance?
+
+According to [Pearson's $\chi^2$ test](https://en.wikipedia.org/wiki/Pearson's_chi-squared_test#Fairness_of_dice)  , the rule of thumb is to atleast have 5 times the total sample space of a single die. The die has 6 sides, so we need atleast 30 tests. To get more significant results, this will be repeated 3 times to give better results. In the first test, we threw the die 40 times and its values are:
+
+6,4,3,1,2,5,3,1,4,2,5,3,1,1,3,2,5,3,1,2,3,5,4,2,3,6,1,4,2,3,4,2,5,6,2,3,1,2,6,4 : $sum=127$
+
+Throw methodology: All throws were made with the right hand pivoted at a point and arc length of the throw was marked such that the same distance was covered and speed in each throw was maintained. The die was a square shaped die as shown in the image above.
+
+This is a *two-tailed hypothesis test (null hypothesis & alternate hypothesis)* where :
+
+$H_0$ : Die is unbiased
+
+$H_1$ is the alternative hypothesis : Die is biased
+
+to test for a *confidence level of 95%* or level of significance, $\alpha=0.05$, i.e, 1 in 100 throws can be off.
+
+In a fair die, we have 6 sides so let x be a random variable that can come in *one die throw* which can assume any one of the values of the die which we assume has a probability of $1/6$.
+
+Thus, *expected value* $$E(X) = \frac{\displaystyle\sum_{i=1}^{6} x_i}{6} = 21/6 = 3.5$$
+
+$$Var(X) = E(X^2) - (E(X))^2$$
+
+where, $$E(X^2) = (1^2 + 2^2 + 3^2 + 4^2 + 5^2 + 6^2)/ 6 = 15.1667$$
+
+$$=>Var(X) = 15.1667 - 3.5^2 = 2.9167$$
+
+For our test with 40 samples, the ideal values we should get :
+
+$$\mu = 40*E(X) = 140$$
+
+$$\sigma^2 = 40*Var(X) = 40*2.9167 = 116.668 $$
+
+$$\sigma = \sqrt{116.668} = 10.8013$$
+
+Computing the test statistic(calculated value) :
+
+$$t =  \frac{\bar{x} - \mu}{\sigma/\sqrt{n-1}}$$ , where n = 6, i.e, sample size and $\sqrt(n-1)$ is the degree of freedom
+
+$$t = -2.6912$$
+
+$$\mid{t}\mid = 2.6912$$
+
+[Tabulated Value](https://faculty.washington.edu/heagerty/Books/Biostatistics/TABLES/t-Tables/) of t with 5 d.f. , $t_{0.05} , Z_\alpha = 2.57$Since, $\mid{t}\mid > z_\alpha $, we reject the Null Hypothesis with 95% confidence.
+
+Just to make sure that the way I tossed the die was not responsible for this bias, this time I did not focus on the speed or the spin of the toss but instead used a paper cup, kept the die inside and then shook the cup sideways, and slammed the cup upside-down on the table and then removed the cup to see the result. The samples were as follows:
+
+4,4,3,6,6,5,6,6,5,2,4,2,5,6,6,3,6,2,5,4,4,4,5,2,4,1,4,1,3,4,3,5,3,2,1,3,6,6,3,2 : $sum=156$
+
+Repeating the hypothesis test, this time the value of *test statistic* was $3.312 > Z_\alpha$ . Again calculated value(CV) > Tabulated Value(TV) , thus we reject our hypothesis once again.
+
+Futher, to avoid confirmation bias, I decided whether or not to accept the die value based on how I shook it and slammed the cup, but this time instead of slamming the cup* (which was an overly enervating task), *I simply decided to shake the cup and remove my hand covering its top such that the die fell on the table.
+
+4,5,3,5,1,4,6,3,2,1,4,5,4,6,1,4,5,5,4,4,3,1,4,4,5,5,3,4,1,4,5,6,3,1,6,5,4,6,3,3 : $sum=153$
+
+Repeating the hypothesis test, this time the value of *test statistic* was $2.68 > Z_\alpha$ . Again calculated value(CV) > Tabulated Value(TV) , thus we reject our hypothesis once again.
+
+Thus, seeing this with 3 tests of 40 throws each. We can conclude with 99% statistical significance that the die is biased with a 95% confidence level.
+
+Hypothesis: The die is unbiasedResult: rejected!
+
+                          $A folklore$ : Millikan's oil drop experiment initial value of the electron was quite wrong, although finer methods of detecting the value were discovered, the accepted value moved to the new one over time, but very slowly. This slow movement was attributed to the confirmation bias by the physicist Feynman. Everyone is subject to it, i.e, trying to confirm a previous result. Another physics experiment attributed to this bias was the [N-ray](https://en.wikipedia.org/wiki/N_ray).

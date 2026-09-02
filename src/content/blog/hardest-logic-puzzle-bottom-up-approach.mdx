@@ -1,0 +1,175 @@
+---
+title: "Hardest logic puzzle : Bottom-up approach"
+date: "2020-02-22"
+description: "The following question was dubbed the hardest logic puzzle, published in 1996, written by the renowned founder of theoretical computer scie..."
+topic: "science"
+order: 7
+---
+
+The following question was dubbed the hardest logic puzzle, published in 1996, written by the renowned founder of theoretical computer science, Raymond Smullyan. One of the reasons I took it up in this blog was because after reading many articles explaining the answer, they were more of a *reverse engineered solution* and none of them, in my opinion,worked up-to the solution such that I could solve any question of this form posed(reason why I was not content with such explanations).
+
+![](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiICehyphenhyphenfJ-SquvkXd7zTcWet-PSWPFniTwSdOWbm7zBDQ0maithAYmHDSbOkiYU384h_ubxg-lExwWbb3mOPukqtLkgSNI6379M-7rxYAwQ3qm7VTfql0TnQDWVpnmEdJqgS1jWcARA6AQ/s1600/Untitled-2.jpg)
+
+Here's the Hardest Logic Puzzle Ever :
+
+> *Three gods A, B, and C are called, in some order, True, False, and Random. True always speaks truly, False always speaks falsely, but whether Random speaks truly or falsely is a completely random matter. Your task is to determine the identities of A, B, and C by asking three yes-no questions; each question must be put to exactly one god. The gods understand English, but will answer all questions in their own language, in which the words for “yes” and “no” are “da” and “ja,” in some order. You do not know which word means which.*
+
+The puzzle has multiple solutions, but the same logic follows. To solve such a question involving liars I divided it into sub-problems, working up to the final solution in this manner:
+
+1. Given* 1 God* who is either lying/truthful, answers your question in Yes/No; how to find out what God is he?
+2. Given* 1 God* who is either lying/truthful, answers your question in Yes/No; how to find out whether The Sun is a Star?
+3. Given *2 Gods*, one liar and one truth, you can ask *one Yes/No *question to find which is the God of Truth.
+4. Given* 3 Gods*, one liar, one truth and one random, you can ask *three Yes/No* questions to find out which is which God.
+
+Having many solutions to such problems, one eloquent way of solving and understanding such questions is by using logic gates. Logic gates simplify what we want to achieve as they can be used to solve a sub problem and be worked up to the real solution.
+
+1. Given* 1 God* who is either lying/truthful and 1 question.
+
+We can simply ask a *factual question* to the God, like 'Is Sun a Star'. The truth God will say *Yes*, whereas the lie God will say *No*. Easy-peasy lemon squeezy!
+
+However, using logic gates, what do we ask to make such a thing possible? To understand this, we need to know what happens when we ask a question to the God of truth vs. the God of lies.
+
+![](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEitAl7B4AaHTqrFO35Shjr890D93_poXn5Ep5fuFnUaRwTjZm61owxOOyrqeydP_FU3AUE2O3zaXoiJGQyKyIsHEpPB8PbUm0xJY_rLTAqZyeoWh-TbsyssEarxx48AxjqqNSHb1uh4BgM/s320/1.jpg)
+
+The diagram on the left shows our question, *Q*, and its answer, *A. *We need to form a question such that A' that comes out is equal to A. *We want the two outputs to match somehow.*
+
+What if we ask 2 questions, $Q_1 & Q_2$ and put a logic gate between them? Since the only thing we want to find out is whether they are the god of truth or not, we pose a question such that  we put an AND(^) gate b/w, i.e, , $Q_1^Q_2$ , i.e, Are you the God of Truth AND Are you the God of truth?
+
+IMPORTANT NOTE: THIS IS A *VARIABLE* QUESTION. *Since we are asking what areYOU to the God.* Both the gods have a different right answer to the question.
+
+God of truth: T^T = T => T
+
+God of lies : F^F = F  => F' = T
+
+*A variable question is the one  for which the right answer varies for both Gods before coming out of their architecture*, i.e, if the True Gods answer is Yes to it, the Lie Gods answer will be No, i.e, the answer to the statement flips when it enters the Lie God architecture. This is what we get:
+
+![](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgFwRAkhmzulhZxvkYS9Bs_iCOz9dCqG5G9U9uKHVLapQZF-viQqMuhsc2d3kOXm9XRcSjkyWk73e5WF_fKo-PE7o3r7PA943yLA-c7FeDWpleCtT2fIGYOXsVpHTSuybDDf9xiTGuuZ44/s320/2.jpg)
+
+We want the final answer to match, the AND gate doesn't give us that output as shown we saw above. Therefore, the answer before the NOT gate should be True in the Lie God Architecture, such that the final answer becomes False to our question.
+
+To do this we can try the same with a biconditional, if and only if (*iff), *or the XNOR gate. When you insert* if and only if* between two statements that are either both true or both false, you get a statement that is true; but if you insert it between one true and one false statement, you get a false statement. It’s like a multiplication sign. The [truth table](https://en.wikipedia.org/wiki/Truth_table) is as follows:
+
+![Image result for xnor truth table](https://sub.allaboutcircuits.com/images/04119.png)
+
+*With this gate, if the number of 1's or True values are even then the Output is 1/True.
+
+Rephrasing the question: Are you the God of truth iff(XNOR) you are the God of truth?
+
+God of truth: T iff T = T => TGod of lies : F iff F = T  => T' = F
+
+So with this statement, both the Gods will give the right answer.
+
+2. Given* 1 God* who is either lying/truthful, find out whether 'the Sun is a Star'.
+
+Applying the same logic as above, we get: *Is the Sun a Star if and only if the sun is a star?*
+
+God of truth: T iff T = T => T
+
+God of lies : T iff T = T  => T' = F
+
+The god of lies still ends up telling a lie.
+
+Here, we tackle a *factual question* itself and not a *variable question*. Thus, it means the values of A and B in the truth table of XNOR remain the same and the *Output of A and B* flips for God Of lies and the final answer varies for both, however, we want the final answers to match.
+
+Let's see if we introduce a *variable question,* what happens.
+
+*Are you the God of truth if and only if the sun is a star?*
+
+(Are you the God Of Truth)XNOR(Is the Sun a star)
+
+God of truth: T iff T = T => TGod of lies : F iff T = F  => F' = TWe successfully get the right answer to the factual question posed.
+
+*Look at the following diagram carefully:*
+
+![](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjlgwHj5wW0ryylehhZKlOUWZ_TXE6uK2u6PXRqO1Ea3HveisiwsEW9LxpfSvKs_xsb3VxVMl1t8MHm9Ru90-x8Uq2ctNXA4ZY_fI4AJLlsHSbJ6TxzExBHwRPqfAq_yAkKf_5WdMSR7sE/s400/3.jpg)
+
+The conclusion from this question is that, for getting *factual *answers from a God of truth or Lies we must club a* variable question(V)* with a *factual question(Q), *to get the correct answer.
+
+Let's see if this is applicable in the next sub problem.
+
+3. Given* 2 Gods* who are either lying/truthful, find out the God of Truth with one question.
+
+Applying the previous sub-problem, let the two Gods be A and B. Here, our *factual question is*: Is God A the God of Truth (since whether A is the God of Truth, or not, is factual and doesn't vary according to who we ask this question to). Our *variable question *remains the same.
+
+Walk upto either A or B and ask the following:
+
+*Are you the God of Truth if and only if 'A' is the God of Truth? (variable XNOR factual)*
+
+If A is the God of Truth:
+
+God of Truth: T iff T = T      =>  TGod of Lies : F iff T = F         =>  F' = T
+
+*"A is the God Of Truth" is True, on asking both Gods.*
+
+If A is the God of Lies:
+
+God of Truth : T iff F = F     =>  F God of Lies: F iff F = T         =>  T' = F
+
+*"A is the God Of Truth" is False, on asking both Gods.
+
+Call it magic, call it truth, the conclusion drawn from *sub-problem 2* seems to work! To make even a liar tell the truth I just need a bi-conditional(XNOR gate) in between the question I want the answer to and a variable question.
+
+(Variable question) XNOR (factual question)= Right answer to factual question4. Given* 3 Gods- L*iar, Truth and Random. Ask *three Yes/No* questions to find each God.
+
+We know the answer from the random God Architecture is unpredictable and we can't make anything out of it, but we also know that we can make God of truth and God of Lies give the answer we want. So our best bet is to eliminate the Random God. Let the 3 Gods be A,B,C. Out of which 1 is random. The question formation in the format *\$variable XNOR factual\$* is as follows:
+
+*Question one: Are you the God of truth if and only if 'A' is the Random God?*
+
+We ask this question to God B.
+
+1. If 'A' is random.Then God B, will say Yes for sure.
+2. If 'A' is not random.Then God B might say Yes/No - if God B is random, No- if B is the God Of Lie/Truth and 'C' is random in this case.
+3. *Conclusion*: If Yes is said, we have two options:  'A' might be random or 'B' might be random.If No is said, we have two options: 'B' might be random or 'C' might be random
+
+SupposeYes is said, we found out that a *random God is between A and B*, then we ask the next question to the third God, God C, because this God is definitely either the God Of Truth or Lies. We ask the following to *God C*:
+
+*God C, Question two : Are you the God of truth if and only if you are the God Of Truth?*
+
+With this, we will know if 'C' is God of truth or God of lies.
+
+Again, we'll ask this God 'C',
+
+*God, C, Are you the God of truth if and only if 'A' is the Random God?*
+
+If he says Yes. We'll know the random God is God 'a', else random God is God 'B'.
+
+SupposeNo is said, we found out that a *random God is between B and C*, then we ask the next question to the first God, God A, because this God is definitely either the God Of Truth or Lies. We ask the following:
+
+*God A,Question two : Are you the God of truth if and only if you are the God Of Truth?*
+
+With this, we will know if 'A' is God of truth or God of lies.
+
+Again, we'll ask this God 'A',
+
+*God, A, Are you the God of truth if and only if 'B' is the Random God?*
+
+If he says Yes. We'll know the random God is God 'B', else random God is God 'C'.
+
+Solved!
+
+We are almost there, coming to the final question!
+
+Considering we do not know what 'da' or 'ja' means, we don't care either.
+
+Coming to the first sub problem, say we want to know whether a God is God Of Truth/Lies with one question but he replies in 'da' or 'ja'.
+
+We ask* variable question iff (factual question 1 iff factual question 2), i.e,Are you the God of Truth if and only if 'da' means yes if and only if you are the God of truth?
+
+Just evaluating ( factual question 1 iff factual question 2):
+
+*Does 'da' means yes if the Sun is a star?*
+
+That is, (Q XNOR True) = Q     , where Q is true/false. Look at XNOR truth table for reference.
+
+That is, (Q XNOR False) = Q'    , where Q is true/false.
+
+Coming to the question:
+
+1. Consider, he is the God of Truth, and 'da' means yes/true:Answer is :  da XNOR (da XNOR da) = da XNOR da = da
+2. Consider, he is the God of Truth, and 'ja' means yes/trueAnswer is :  ja XNOR (da XNOR ja) = ja XNOR da = da
+3. Consider, he is the God of Lies, and 'da' means yes/true:Answer is :  ja XNOR (da XNOR da) = ja XNOR da = ja
+4. Consider, he is the God of Truth, and 'ja' means yes/trueAnswer is :  da XNOR (da XNOR ja) = da XNOR da = ja
+
+Thus, we will get da as the answer, if the factual question is true, and ja if it is false.So just add the statement does 'da' mean yes to the 4th sub problem to get the answer to the riddle.
+
+And the puzzle will be solved!

@@ -1,0 +1,19 @@
+---
+title: "Probability and it's probability!"
+date: "2021-03-22"
+description: "This post seeks to find a free meeting room in my office floor. The shores of Dirac Sea  has an interesting puzzle about probabilities whic..."
+topic: "science"
+order: 4
+---
+
+This post seeks to find a free meeting room in my office floor. The [shores of Dirac Sea](https://diracseashore.wordpress.com/2008/11/05/probabilities-in-physics/) has an interesting puzzle about probabilities which also inspired the results of my findings.
+
+> Let us say that someone gives you a lopsided bet. Say that with probability $r$ one gets heads, and with probability $1 - r$ one gets tails, and you have to pick heads or tails. You only know the outcome of the first event. Let's say after the first toss it came out heads. What is the probability that $r > 1/2$?
+
+The question seems redundant, the outcome of a bet is determined by another event's probability, basically what we are dealing with is - the probability, of a *probability*!
+
+One day when going to one of the meeting rooms in my office floor for our daily meeting, none of the meeting rooms were vacant, since this had happened a number of times before as well I thought how would I know if any of the meeting rooms is empty or not. It immediately made me wonder how I could calculate the probability of the vacancy of a room given $k$ observations (having been sampled at uniform time instances,i.e, around the same time everyday). So the question that I began solving was how many of the $x$ out of $n$ rooms were vacant,(where $O = {x_1, x_2, x_3 ..., x_k}$), the assumption being that a room is occupied for a constant $t$ unit of time where \$t=1\$ for simplification, and that the start of occupation is a Poisson process with rate \$\lambda \$, where all its values are equally likely(which defines our set of candidate distributions), and thus we can calculate the probability of each $\lambda $ given $O$ -
+
+$$ P(O|\lambda) = \prod_{x \in O} \frac{\lambda^x}{x!}e^{-\lambda} $$
+
+So it will be easy to compute the probability of each $\lambda$ by normalizing the above equation.

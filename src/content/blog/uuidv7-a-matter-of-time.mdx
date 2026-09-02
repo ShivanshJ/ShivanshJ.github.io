@@ -1,0 +1,31 @@
+---
+title: "UUIDv7: a matter of time"
+date: "2026-05-06"
+description: "In distributed systems, generating unique identifiers without coordination is a solved problem — UUIDv4 has done it for decades. But randomness has a cost..."
+topic: "tech"
+order: 2
+---
+
+In distributed systems, generating unique identifiers without coordination is a solved problem — UUIDv4 has done it for decades with 122 random bits. But randomness has a cost: inserts into B-tree indexes scatter across pages, cache locality dies, and "sort by ID" becomes meaningless. UUIDv7 fixes this by prefixing the identifier with a millisecond-precision Unix timestamp, followed by random bits.
+
+Recently, I was digging into UUIDv7 and learned it's not totally random. It's ordered by time. The front of the ID is the time it was made. The back of the ID is random. So if you line up a pile of these IDs and sort them, they come out in the order they were made — older ones first, newer ones last. And because the back is still random, no two IDs are ever the same. That's it. They sort by time, and they are still unique.
+
+**Why this matters in distributed systems:**
+
+- **Index locality**: append-heavy tables (events, logs, messages) get hot-page inserts instead of random-page thrash. Postgres and MySQL benchmarks routinely show 2–4x write throughput vs UUIDv4.
+- **Natural ordering**: no separate `created_at` needed for coarse ordering. Pagination via `WHERE id > :cursor` just works.
+- **No coordinator**: unlike Snowflake IDs, no worker-ID registry, no clock-skew coordination service.
+
+**When to use what:**
+
+| Use case | Best choice |
+|---|---|
+| Public-facing IDs (leaking creation time is bad) | UUIDv4 |
+| Primary keys, event logs, message IDs | UUIDv7 |
+| Sub-ms ordering guarantees, single datacenter | Snowflake / ULID |
+| Human-typeable short IDs | NanoID |
+| Content-addressed dedup | UUIDv5 (hash) |
+
+One caveat: UUIDv7 leaks creation time. For session tokens, password reset links, or anything an attacker could enumerate by timestamp — stick with v4.
+
+The RFC (9562, published May 2024) is short and worth reading. Most modern language stdlibs and DB drivers now ship v7 generators — check before pulling a dependency.

@@ -1,0 +1,36 @@
+---
+title: "The hidden cost of a curly brace"
+date: "2026-08-24"
+description: "Why your server can't do 1 million requests per second — and why the answer is almost always JSON, not the network."
+topic: "tech"
+order: 1
+---
+
+A standard wire — the network interface card (NIC) that plugs your server into the network — supports a bandwidth of about **10 GbE** (10 gigabits per second), which works out to roughly **1 GB/sec** of actual data. A typical REST request is around 1KB. So on paper, 1KB × 1,000,000 requests = 1 GB/sec, which the wire can handle just fine. And yet almost no vanilla REST server hits 1M req/sec on a single box. Why does the CPU throttle with high requests?
+
+Let's do the math from first principles. If we want 1M requests per second, we have exactly **1 microsecond (1000 nanoseconds)** to process each one. That's the whole budget.
+
+Here's roughly where those nanoseconds go for a single packet:
+
+| Stage | Cost (ns) |
+|---|---|
+| NIC interrupt + user→kernel switch | 1000–3000 |
+| Kernel networking (TCP/IP, firewall, conntrack) | ~1500 |
+| Kernel→user memory copy | ~200 |
+| App-level work (routing, handler) | 500–1000 |
+| **JSON deserialization (1KB payload)** | **30,000–60,000** |
+| gRPC/Protobuf deserialize (same 1KB) | 1,000–2,000 |
+
+Read that JSON row again. Parsing one 1KB JSON body eats **30–60x** your entire per-request budget. That's the hidden killer. The CPU is pegged at 100% not because your business logic is slow, but because it's walking a string byte-by-byte asking "is this a digit? is this a quote? is this the end of the key?"
+
+Compare a packet vs. a REST request. A packet you just DMA into RAM and hand off — the NIC and kernel don't care what's inside. A REST request is like receiving a sealed letter: you have to open it, read every word, and rewrite the contents into something your program can use. `{"age": 30}` means the CPU scans the characters `'3'` and `'0'`, converts them to the integer `30`, and stores it. Every field. Every request.
+
+Binary formats like Protobuf, Avro, or Cap'n Proto skip most of this. The schema is known ahead of time, so `30` is already sitting in memory as an integer — often the deserializer is just a `memcpy` of a fixed byte range. Block-level copies instead of character-level parsing.
+
+This is why Redis invented its own protocol (RESP), why high-frequency trading systems use SBE and FlatBuffers, and why gRPC is the default inside every serious microservice mesh. It's not a fashion choice. It's the only way the CPU math works out.
+
+**When JSON is fine:** low request rates, browser-facing APIs (JSON is native to JS), debuggability matters more than throughput, payloads are small and infrequent.
+
+**When it stops being fine:** internal service-to-service traffic, anything above ~50k req/sec per core, latency-sensitive paths, mobile clients on tight battery/data budgets.
+
+The takeaway: before you scale horizontally, look at what your CPU is actually doing. Nine times out of ten, it's parsing strings.
