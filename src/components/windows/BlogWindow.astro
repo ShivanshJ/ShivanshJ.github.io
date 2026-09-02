@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import Window from '../desktop/Window.astro';
 
-const posts = (await getCollection('blog')).sort((a, b) => a.data.order - b.data.order);
+const posts = (await getCollection('blog')).sort((a, b) => b.data.date.localeCompare(a.data.date));
 
 const readingTime = (raw: string) => {
   const words = raw.trim().split(/\s+/).length;
