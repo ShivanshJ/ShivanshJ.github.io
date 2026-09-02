@@ -1,0 +1,22 @@
+---
+import Window from '../desktop/Window.astro';
+import SignalTile, { type Signal } from '../desktop/SignalTile.astro';
+
+export interface Props {
+  items: Signal[];
+}
+const { items } = Astro.props;
+---
+<Window id="signal" title="Signal" x={260} y={160} width={680} height={480}>
+  <div class="dw-signal-grid">
+    {items.map((s) => <SignalTile signal={s} />)}
+  </div>
+</Window>
+
+<style>
+  .dw-signal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+</style>

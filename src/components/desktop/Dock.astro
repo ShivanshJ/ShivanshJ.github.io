@@ -1,0 +1,127 @@
+---
+import { site } from '../../data/site';
+
+interface DockItem {
+  id: string;
+  label: string;
+  window?: string;
+  href?: string;
+  color: string;
+  glyph?: string;
+  iconSrc?: string;
+}
+const items: DockItem[] = [
+  { id: 'finder',   label: 'Finder',   window: 'readme',  color: '#3A7BD5', glyph: '☺' },
+  { id: 'work',     label: 'Work',     window: 'work',    color: '#4C8BF5', glyph: '⌘' },
+  { id: 'signal',   label: 'Signal',   window: 'signal',  color: '#8B5CF6', glyph: '✦' },
+  { id: 'mail',     label: 'Contact',  window: 'contact', color: '#22C55E', glyph: '✉' },
+  { id: 'github',   label: 'GitHub',   href: site.github,   color: '#1F1F24', iconSrc: '/github-mark.svg' },
+  { id: 'linkedin', label: 'LinkedIn', href: site.linkedin, color: '#0A66C2', glyph: 'in' },
+  { id: 'trash',    label: 'Trash',    color: '#4A4A52', glyph: '🗑' },
+];
+---
+<div class="dw-dock" role="toolbar" aria-label="Dock">
+  {items.map((it, i) => (
+    <>
+      {i === items.length - 1 && <div class="dw-dock-sep" aria-hidden="true"></div>}
+      <button
+        type="button"
+        class="dw-dock-item"
+        data-window={it.window}
+        data-href={it.href}
+        aria-label={it.label}
+        title={it.label}
+        style={`--dock-color:${it.color};`}
+      >
+        {it.iconSrc
+          ? <img class="dw-dock-img" src={it.iconSrc} alt="" width="32" height="32" />
+          : <span class="dw-dock-glyph">{it.glyph}</span>}
+        <span class="dw-dock-tooltip" data-scramble>{it.label}</span>
+      </button>
+    </>
+  ))}
+</div>
+
+<style>
+  .dw-dock {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(28, 28, 28, 0.72);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    z-index: 900;
+  }
+  .dw-dock-sep {
+    width: 1px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 0 4px;
+  }
+  .dw-dock-item {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    border: 0.5px solid rgba(0, 0, 0, 0.35);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--dock-color) 90%, white 10%), var(--dock-color));
+    color: white;
+    font-family: -apple-system, "SF Pro Text", sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  .dw-dock-item:hover {
+    transform: translateY(-10px) scale(1.15);
+  }
+  .dw-dock-item:hover + .dw-dock-item,
+  .dw-dock-item:has(+ .dw-dock-item:hover) { /* stub for future magnification */
+  }
+  .dw-dock-glyph { display: block; line-height: 1; }
+  .dw-dock-img {
+    display: block;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+  .dw-dock-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+  .dw-dock-item:hover .dw-dock-tooltip { opacity: 1; }
+
+  .dw-dock-item.is-bouncing {
+    animation: dw-bounce 500ms ease;
+  }
+  @keyframes dw-bounce {
+    0%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-16px) scale(1.1); }
+    60% { transform: translateY(-4px); }
+  }
+</style>

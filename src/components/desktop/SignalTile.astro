@@ -1,0 +1,77 @@
+---
+export interface Signal {
+  label: string;
+  title: string;
+  detail: string;
+  year?: string;
+  href?: string;
+}
+export interface Props {
+  signal: Signal;
+}
+const { signal } = Astro.props;
+const Tag = signal.href ? 'a' : 'div';
+const linkProps = signal.href
+  ? { href: signal.href, target: '_blank', rel: 'noopener noreferrer' }
+  : {};
+---
+<Tag {...linkProps} class="dw-signal-tile">
+  <div class="dw-signal-head">
+    <span class="dw-signal-label">{signal.label}</span>
+    {signal.year && <span class="dw-signal-year">{signal.year}</span>}
+  </div>
+  <h3 class="dw-signal-title">
+    <span data-scramble>{signal.title}</span>{signal.href && <span class="dw-signal-arrow">↗</span>}
+  </h3>
+  <p class="dw-signal-detail">{signal.detail}</p>
+</Tag>
+
+<style>
+  .dw-signal-tile {
+    display: block;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+  }
+  .dw-signal-tile:hover {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+  }
+  .dw-signal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .dw-signal-label {
+    font-family: "Geist Mono Variable", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .dw-signal-year {
+    font-family: "Geist Mono Variable", ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .dw-signal-title {
+    margin: 8px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .dw-signal-arrow {
+    margin-left: 6px;
+    color: var(--accent);
+    font-weight: 400;
+  }
+  .dw-signal-detail {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>

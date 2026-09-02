@@ -1,0 +1,155 @@
+---
+export interface Props {
+  id: string;
+  title: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  open?: boolean;         // start open
+}
+const {
+  id,
+  title,
+  x = 120,
+  y = 80,
+  width = 640,
+  height = 440,
+  open = false,
+} = Astro.props;
+---
+<section
+  class={`dw-window ${open ? 'is-open' : ''}`}
+  id={`dw-window-${id}`}
+  data-window-id={id}
+  style={`left:${x}px; top:${y}px; width:${width}px; height:${height}px;`}
+  role="dialog"
+  aria-label={title}
+>
+  <header class="dw-titlebar" data-drag-handle>
+    <div class="dw-traffic">
+      <button type="button" class="dw-tl dw-tl-close"  data-window-action="close"    aria-label="Close"></button>
+      <button type="button" class="dw-tl dw-tl-min"    data-window-action="minimize" aria-label="Minimize"></button>
+      <button type="button" class="dw-tl dw-tl-max"    data-window-action="maximize" aria-label="Maximize"></button>
+    </div>
+    <div class="dw-title">{title}</div>
+    <div class="dw-titlebar-spacer" aria-hidden="true"></div>
+  </header>
+  <div class="dw-body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .dw-window {
+    position: fixed;
+    display: none;
+    flex-direction: column;
+    background: rgba(44, 44, 44, 0.88);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.5),
+      0 0 0 0.5px rgba(255, 255, 255, 0.06) inset;
+    color: var(--text);
+    overflow: hidden;
+    min-width: 320px;
+    min-height: 220px;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 220ms ease;
+    transform-origin: 50% 90%;
+  }
+  .dw-window.is-open {
+    display: flex;
+    animation: dw-open 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dw-window.is-minimizing {
+    transform: translateY(80vh) scale(0.4);
+    opacity: 0;
+  }
+  @keyframes dw-open {
+    from { transform: translateY(20px) scale(0.96); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+
+  .dw-titlebar {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: grab;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .dw-titlebar:active { cursor: grabbing; }
+
+  .dw-traffic {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .dw-tl {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 0.5px solid rgba(0, 0, 0, 0.3);
+    cursor: default;
+    padding: 0;
+  }
+  .dw-tl-close { background: #FF5F57; }
+  .dw-tl-min   { background: #FEBC2E; }
+  .dw-tl-max   { background: #28C840; }
+  .dw-tl:hover { filter: brightness(1.08); }
+
+  .dw-title {
+    flex: 1;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Geist Variable", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: -0.01em;
+  }
+  .dw-titlebar-spacer { width: 52px; }
+
+  .dw-body {
+    flex: 1;
+    overflow-y: scroll;             /* always show the scrollbar */
+    overflow-x: hidden;
+    padding: 20px 24px;
+    font-family: "Geist Variable", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    scrollbar-width: thin;                                     /* Firefox */
+    scrollbar-color: rgba(255,255,255,0.28) transparent;       /* Firefox */
+  }
+  .dw-body::-webkit-scrollbar { width: 10px; }
+  .dw-body::-webkit-scrollbar-track { background: transparent; }
+  .dw-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.20);
+    border: 2px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  .dw-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+    background-clip: content-box;
+  }
+
+  .dw-body :global(h3) {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+  }
+  .dw-body :global(a) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(232, 80, 30, 0.4);
+    text-underline-offset: 3px;
+  }
+  .dw-body :global(a:hover) { text-decoration-color: var(--accent); }
+</style>

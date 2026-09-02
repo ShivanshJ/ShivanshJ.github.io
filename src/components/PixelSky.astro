@@ -1,0 +1,240 @@
+---
+// Technique: fragment shader draws an animated fBm noise gradient,
+// then quantizes to a tiny palette via a 4x4 Bayer matrix (ordered dithering).
+// Rendered at 320x180 and upscaled with image-rendering: pixelated.
+---
+<canvas
+  class="pixel-sky"
+  width="640"
+  height="360"
+  aria-hidden="true"
+></canvas>
+
+<style>
+  .pixel-sky {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pixel-sky { opacity: 0.85; }
+  }
+</style>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('canvas.pixel-sky');
+  if (canvas) {
+    const gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false });
+
+    if (gl) {
+      const vertSrc = `
+        attribute vec2 a_pos;
+        void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+      `;
+
+      const fragSrc = `
+        precision mediump float;
+        uniform vec2 u_res;
+        uniform float u_time;
+        uniform vec2 u_mouse;         // canvas pixel coords
+        uniform float u_mouseEnabled; // 0 / 1
+
+        // hash + value noise
+        float hash(vec2 p) {
+          p = fract(p * vec2(123.34, 456.21));
+          p += dot(p, p + 45.32);
+          return fract(p.x * p.y);
+        }
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          float a = hash(i);
+          float b = hash(i + vec2(1.0, 0.0));
+          float c = hash(i + vec2(0.0, 1.0));
+          float d = hash(i + vec2(1.0, 1.0));
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+        }
+        float fbm(vec2 p) {
+          float v = 0.0;
+          float a = 0.5;
+          for (int i = 0; i < 5; i++) {
+            v += a * noise(p);
+            p *= 2.03;
+            a *= 0.5;
+          }
+          return v;
+        }
+
+        // 4x4 Bayer matrix for ordered dithering
+        float bayer(vec2 p) {
+          int x = int(mod(p.x, 4.0));
+          int y = int(mod(p.y, 4.0));
+          int idx = x + y * 4;
+          if (idx == 0)  return  0.5/16.0;
+          if (idx == 1)  return  8.5/16.0;
+          if (idx == 2)  return  2.5/16.0;
+          if (idx == 3)  return 10.5/16.0;
+          if (idx == 4)  return 12.5/16.0;
+          if (idx == 5)  return  4.5/16.0;
+          if (idx == 6)  return 14.5/16.0;
+          if (idx == 7)  return  6.5/16.0;
+          if (idx == 8)  return  3.5/16.0;
+          if (idx == 9)  return 11.5/16.0;
+          if (idx == 10) return  1.5/16.0;
+          if (idx == 11) return  9.5/16.0;
+          if (idx == 12) return 15.5/16.0;
+          if (idx == 13) return  7.5/16.0;
+          if (idx == 14) return 13.5/16.0;
+          return                 5.5/16.0;
+        }
+
+        // Sample the animated field at p → returns [0,1].
+        // Pattern drifts predominantly LEFT→RIGHT (large horizontal time
+        // offset; only a tiny vertical component to keep it alive).
+        float field(vec2 p, float t) {
+          vec2 drift = vec2(t * 3.2, t * 0.15);
+          float lo = fbm(p * 1.4 - drift * 0.5);          // slow, big shapes
+          float hi = fbm(p * 3.4 - drift);                 // fine texture
+          float v = lo * 0.65 + hi * 0.45;
+          // vertical gradient — darker at bottom, like the first iteration
+          v += (1.0 - p.y) * 0.08;
+          return v;
+        }
+
+        void main() {
+          vec2 uv = gl_FragCoord.xy / u_res.xy;
+          float aspect = u_res.x / u_res.y;
+          vec2 p = vec2(uv.x * aspect, uv.y);
+
+          float t = u_time * 0.04;
+
+          // Sample the animated dither field (drifts left→right)
+          float v = field(p, t);
+
+          // Bias the whole field darker so most pixels are near-black
+          v = v * 0.70 - 0.05;
+
+          // Cursor darken well — modulated by fbm so it looks like a
+          // patchy, moving cloud of thinned-out pixels rather than a
+          // clean circular void. Only reduces density; never fully clears.
+          if (u_mouseEnabled > 0.5) {
+            vec2 mNorm = vec2(u_mouse.x / u_res.x, 1.0 - u_mouse.y / u_res.y);
+            vec2 mp = vec2(mNorm.x * aspect, mNorm.y);
+            float d = distance(p, mp);
+            float radial = 1.0 - smoothstep(0.0, 0.55, d);
+            // Organic mask — soft moving patches inside the well
+            float breakup = 0.35 + 0.65 * fbm(p * 6.0 - u_time * 0.15);
+            float well = radial * breakup;
+            v -= 0.42 * well;
+          }
+
+          v = clamp(v, 0.02, 1.0);   // never quite pure black
+
+          // Quantize through Bayer dither → 4-step ramp (chunkier)
+          float b = bayer(gl_FragCoord.xy);
+          float steps = 4.0;
+          float q = floor(v * steps + b) / steps;
+
+          // Very dark grey base (revealed under cursor) → soft mid-grey max
+          vec3 col = vec3(mix(0.055, 0.55, q));
+
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `;
+
+      const compile = (type: number, src: string) => {
+        const s = gl.createShader(type)!;
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      };
+
+      const prog = gl.createProgram()!;
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, vertSrc));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fragSrc));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+        gl.STATIC_DRAW,
+      );
+      const loc = gl.getAttribLocation(prog, 'a_pos');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+      const uRes = gl.getUniformLocation(prog, 'u_res');
+      const uTime = gl.getUniformLocation(prog, 'u_time');
+      const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+      const uMouseEnabled = gl.getUniformLocation(prog, 'u_mouseEnabled');
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+
+      const isTouch = matchMedia('(hover: none)').matches;
+      gl.uniform1f(uMouseEnabled, isTouch ? 0 : 1);
+
+      // Damped cursor chase — target is set by events, curX/Y lerps toward
+      // it slowly so the darkening well trails the cursor with soft weight.
+      let targetX = canvas.width * 0.5;
+      let targetY = canvas.height * 0.5;
+      let curX = targetX;
+      let curY = targetY;
+      gl.uniform2f(uMouse, curX, curY);
+
+      if (!isTouch) {
+        window.addEventListener(
+          'pointermove',
+          (e) => {
+            targetX = (e.clientX / window.innerWidth) * canvas.width;
+            targetY = (e.clientY / window.innerHeight) * canvas.height;
+          },
+          { passive: true },
+        );
+      }
+
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const start = performance.now();
+      let raf = 0;
+      let lastTs = performance.now();
+
+      const draw = (now: number) => {
+        const dt = Math.min(0.1, (now - lastTs) / 1000);
+        lastTs = now;
+
+        // Slow lerp toward the pointer so the well feels floaty — settles
+        // into place a beat after you stop moving.
+        const alpha = 1 - Math.exp(-6 * dt);
+        curX += (targetX - curX) * alpha;
+        curY += (targetY - curY) * alpha;
+
+        gl.uniform1f(uTime, (now - start) / 1000);
+        gl.uniform2f(uMouse, curX, curY);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        if (!reduce) raf = requestAnimationFrame(draw);
+      };
+
+      if (reduce) {
+        gl.uniform1f(uTime, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      } else {
+        raf = requestAnimationFrame(draw);
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelAnimationFrame(raf);
+        else if (!reduce) raf = requestAnimationFrame(draw);
+      });
+    }
+  }
+</script>

@@ -1,0 +1,330 @@
+---
+import Window from '../desktop/Window.astro';
+---
+<Window id="snake" title="Snake" x={200} y={120} width={380} height={520}>
+  <div class="dw-snake">
+    <div class="dw-snake-hud">
+      <span class="dw-snake-stat">
+        <span class="dw-snake-stat-label">score</span>
+        <span class="dw-snake-stat-value" id="dw-snake-score">0</span>
+      </span>
+      <span class="dw-snake-stat">
+        <span class="dw-snake-stat-label">best</span>
+        <span class="dw-snake-stat-value" id="dw-snake-best">0</span>
+      </span>
+    </div>
+
+    <div class="dw-snake-stage">
+      <canvas id="dw-snake-canvas" width="320" height="320" tabindex="0"></canvas>
+      <div class="dw-snake-overlay" id="dw-snake-overlay" data-state="ready">
+        <p class="dw-snake-overlay-title" id="dw-snake-overlay-title">Snake</p>
+        <p class="dw-snake-overlay-sub" id="dw-snake-overlay-sub">click or press any key to start</p>
+      </div>
+    </div>
+
+    <p class="dw-snake-help">
+      <span class="dw-kbd">↑</span> <span class="dw-kbd">↓</span> <span class="dw-kbd">←</span> <span class="dw-kbd">→</span>
+      or <span class="dw-kbd">W</span> <span class="dw-kbd">A</span> <span class="dw-kbd">S</span> <span class="dw-kbd">D</span>
+    </p>
+  </div>
+</Window>
+
+<style>
+  .dw-snake {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    font-family: "Geist Mono Variable", ui-monospace, monospace;
+    color: var(--text);
+  }
+  .dw-snake-hud {
+    display: flex;
+    gap: 28px;
+    padding-top: 4px;
+  }
+  .dw-snake-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .dw-snake-stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+  .dw-snake-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dw-snake-stage {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.35);
+    image-rendering: pixelated;
+  }
+  .dw-snake-stage::before,
+  .dw-snake-stage::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-color: var(--accent);
+    border-style: solid;
+    opacity: 0.9;
+  }
+  .dw-snake-stage::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+  .dw-snake-stage::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+  #dw-snake-canvas {
+    display: block;
+    outline: none;
+    cursor: crosshair;
+  }
+  .dw-snake-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    text-align: center;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+  .dw-snake-overlay[data-state="playing"] { opacity: 0; }
+  .dw-snake-overlay-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .dw-snake-overlay-sub {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .dw-snake-help {
+    margin: 0;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .dw-kbd {
+    display: inline-block;
+    min-width: 20px;
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    font-family: "Geist Mono Variable", ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1;
+    text-align: center;
+  }
+</style>
+
+<script>
+  type V = { x: number; y: number };
+
+  const canvas = document.getElementById('dw-snake-canvas') as HTMLCanvasElement | null;
+  const overlay = document.getElementById('dw-snake-overlay') as HTMLElement | null;
+  const overlayTitle = document.getElementById('dw-snake-overlay-title');
+  const overlaySub = document.getElementById('dw-snake-overlay-sub');
+  const scoreEl = document.getElementById('dw-snake-score');
+  const bestEl = document.getElementById('dw-snake-best');
+  const win = document.getElementById('dw-window-snake');
+
+  if (canvas && overlay && win) {
+    const ctx = canvas.getContext('2d')!;
+    const CELL = 16;
+    const COLS = canvas.width / CELL;
+    const ROWS = canvas.height / CELL;
+
+    // --- Colors pulled once, cached from CSS vars for consistency
+    const css = getComputedStyle(document.documentElement);
+    const ACCENT = css.getPropertyValue('--accent').trim() || '#4C8BF5';
+    const MUTED  = 'rgba(255, 255, 255, 0.20)';
+    const GRID   = 'rgba(255, 255, 255, 0.03)';
+    const HEAD   = '#FFFFFF';
+    const FOOD   = '#FF3B30';
+
+    // --- State
+    let snake: V[] = [];
+    let dir: V = { x: 1, y: 0 };
+    let nextDir: V = dir;
+    let food: V = { x: 0, y: 0 };
+    let score = 0;
+    let best = parseInt(localStorage.getItem('dw-snake-best') || '0', 10) || 0;
+    let alive = false;
+    let started = false;
+    let stepTimer: number | null = null;
+
+    if (bestEl) bestEl.textContent = String(best);
+
+    const placeFood = () => {
+      while (true) {
+        const nx = Math.floor(Math.random() * COLS);
+        const ny = Math.floor(Math.random() * ROWS);
+        if (!snake.some((s) => s.x === nx && s.y === ny)) {
+          food = { x: nx, y: ny };
+          return;
+        }
+      }
+    };
+
+    const reset = () => {
+      snake = [
+        { x: 10, y: 10 },
+        { x: 9,  y: 10 },
+        { x: 8,  y: 10 },
+      ];
+      dir = { x: 1, y: 0 };
+      nextDir = dir;
+      score = 0;
+      if (scoreEl) scoreEl.textContent = '0';
+      placeFood();
+      alive = true;
+      draw();
+    };
+
+    const drawGrid = () => {
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = GRID;
+      for (let x = 0; x < COLS; x++) {
+        for (let y = 0; y < ROWS; y++) {
+          if ((x + y) % 2 === 0) ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+        }
+      }
+    };
+
+    const draw = () => {
+      drawGrid();
+      // food
+      ctx.fillStyle = FOOD;
+      ctx.fillRect(food.x * CELL + 3, food.y * CELL + 3, CELL - 6, CELL - 6);
+      // snake body
+      for (let i = snake.length - 1; i >= 1; i--) {
+        const s = snake[i];
+        ctx.fillStyle = ACCENT;
+        ctx.fillRect(s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2);
+      }
+      // snake head
+      const h = snake[0];
+      ctx.fillStyle = HEAD;
+      ctx.fillRect(h.x * CELL + 1, h.y * CELL + 1, CELL - 2, CELL - 2);
+    };
+
+    const gameOver = () => {
+      alive = false;
+      if (stepTimer !== null) { clearInterval(stepTimer); stepTimer = null; }
+      if (score > best) {
+        best = score;
+        localStorage.setItem('dw-snake-best', String(best));
+        if (bestEl) bestEl.textContent = String(best);
+      }
+      if (overlay) overlay.setAttribute('data-state', 'over');
+      if (overlayTitle) overlayTitle.textContent = 'Game Over';
+      if (overlaySub) overlaySub.textContent = `score: ${score} · press any key`;
+      overlay!.style.opacity = '1';
+    };
+
+    const step = () => {
+      dir = nextDir;
+      const head: V = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      // walls kill
+      if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+        gameOver();
+        return;
+      }
+      // self-collision
+      if (snake.some((s) => s.x === head.x && s.y === head.y)) {
+        gameOver();
+        return;
+      }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        if (scoreEl) scoreEl.textContent = String(score);
+        placeFood();
+      } else {
+        snake.pop();
+      }
+      draw();
+    };
+
+    const start = () => {
+      reset();
+      started = true;
+      if (overlay) overlay.setAttribute('data-state', 'playing');
+      overlay!.style.opacity = '0';
+      if (stepTimer !== null) clearInterval(stepTimer);
+      stepTimer = window.setInterval(step, 120);
+      canvas.focus();
+    };
+
+    // Keyboard control — only when the Snake window is actually open on screen.
+    const setDir = (dx: number, dy: number) => {
+      // disallow instant reverse
+      if (snake.length > 1 && dx === -dir.x && dy === -dir.y) return;
+      nextDir = { x: dx, y: dy };
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (!win.classList.contains('is-open')) return;
+      const k = e.key;
+      const arrows = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+      const wasd = ['w', 'a', 's', 'd', 'W', 'A', 'S', 'D'];
+      if (arrows.includes(k) || wasd.includes(k)) e.preventDefault();
+
+      if (!started || !alive) {
+        // Any relevant key restarts / starts the game
+        if (arrows.includes(k) || wasd.includes(k) || k === ' ' || k === 'Enter') {
+          start();
+          // apply the direction that was pressed so movement kicks in immediately
+        } else {
+          return;
+        }
+      }
+      if (k === 'ArrowUp'    || k === 'w' || k === 'W') setDir(0, -1);
+      if (k === 'ArrowDown'  || k === 's' || k === 'S') setDir(0,  1);
+      if (k === 'ArrowLeft'  || k === 'a' || k === 'A') setDir(-1, 0);
+      if (k === 'ArrowRight' || k === 'd' || k === 'D') setDir(1,  0);
+    });
+
+    // Click on canvas / overlay to start
+    const clickStart = () => { if (!started || !alive) start(); };
+    canvas.addEventListener('pointerdown', clickStart);
+    overlay.addEventListener('pointerdown', clickStart);
+
+    // Pause when the window is closed (freeze the game)
+    const observer = new MutationObserver(() => {
+      if (!win.classList.contains('is-open') && stepTimer !== null) {
+        clearInterval(stepTimer);
+        stepTimer = null;
+        alive = false;
+        started = false;
+      }
+    });
+    observer.observe(win, { attributes: true, attributeFilter: ['class'] });
+
+    // Initial paint (grid only, until player starts)
+    drawGrid();
+  }
+</script>

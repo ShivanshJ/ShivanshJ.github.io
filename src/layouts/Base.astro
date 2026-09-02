@@ -1,0 +1,42 @@
+---
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '../styles/global.css';
+import '../styles/desktop.css';
+import PixelSky from '../components/PixelSky.astro';
+import { seo, site } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = seo.title,
+  description = seo.description,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content={site.themeColor} />
+  </head>
+  <body class="text-text">
+    <PixelSky />
+    <slot />
+    <script>
+      import '../scripts/scramble.ts';
+      import '../scripts/highlight-prose.ts';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+---
+// Wallpaper-level "hero" plate — name + monospace tagline with blinking cursor.
+// Sits absolutely positioned inside the .dw-desktop container.
+import { site } from '../../data/site';
+
+interface Props {
+  name?: string;
+  tagline?: string;
+}
+const {
+  name = site.name,
+  tagline = site.tagline,
+} = Astro.props;
+---
+<div class="dw-plate">
+  <h1 class="dw-plate-name">{name}</h1>
+  <p class="dw-plate-sub dw-plate-tagline">
+    <span class="dw-plate-prompt">&gt;_</span> {tagline}<span class="cursor">&nbsp;</span>
+  </p>
+</div>
+
+<style>
+  .dw-plate {
+    position: absolute;
+    left: 32px;
+    top: 32px;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+    max-width: 60%;
+  }
+  .dw-plate-name {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Geist Variable", sans-serif;
+    font-size: clamp(40px, 6vw, 84px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin: 0;
+  }
+  .dw-plate-sub {
+    margin-top: 12px;
+    font-size: clamp(14px, 1.4vw, 18px);
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: -0.005em;
+  }
+  .dw-plate-tagline {
+    font-family: "Geist Mono Variable", ui-monospace, Menlo, Consolas, monospace;
+    letter-spacing: 0;
+  }
+  .dw-plate-prompt {
+    color: var(--accent);
+    margin-right: 6px;
+    font-weight: 700;
+  }
+</style>

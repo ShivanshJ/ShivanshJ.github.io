@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import MenuBar from './desktop/MenuBar.astro';
+import Dock from './desktop/Dock.astro';
+import DesktopIcon from './desktop/DesktopIcon.astro';
+import HeroPlate from './desktop/HeroPlate.astro';
+import ReadmeWindow from './windows/ReadmeWindow.astro';
+import WorkWindow from './windows/WorkWindow.astro';
+import SignalWindow from './windows/SignalWindow.astro';
+import ContactWindow from './windows/ContactWindow.astro';
+import SnakeWindow from './windows/SnakeWindow.astro';
+import type { Signal } from './desktop/SignalTile.astro';
+
+const workEntries = (await getCollection('work')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const signals: Signal[] = [
+  { label: 'education',   title: 'Cornell University — MS, CS',    detail: '3.8 GPA · Merit Scholarship',                     year: '2022' },
+  { label: 'startup',     title: 'Verda.ai',                       detail: 'Blockchain startup battling fake video & images', year: '2021', href: 'https://verda.ai' },
+  { label: 'hustle',      title: 'Bootstrapped crypto transfer',   detail: '30 users · $80k processed',                       year: '2023', href: 'https://stellar-transfer.web.app/' },
+  { label: 'award',       title: '1st — Expedia Global Hackathon', detail: 'NLP travel planning bot · 160 participants',      year: '2021' },
+  { label: 'open source', title: 'GraphQL-Flask Authentication',   detail: 'Contributor to the auth library',                 href: 'https://github.com/rscarrera27/Flask-GraphQL-Auth/' },
+];
+
+const desktopIcons = [
+  { id: 'readme',  label: 'README.txt',   kind: 'doc'    as const },
+  { id: 'work',    label: 'Work',         kind: 'folder' as const, badge: workEntries.length },
+  { id: 'signal',  label: 'Signal',       kind: 'folder' as const, badge: signals.length },
+  { id: 'contact', label: 'Contact.txt',  kind: 'doc'    as const },
+  { id: 'snake',   label: 'Snake',        kind: 'app'    as const, glyph: '🐍', color: '#22C55E' },
+];
+---
+<MenuBar />
+
+<main class="dw-desktop" aria-label="Desktop">
+  <div class="dw-icon-grid">
+    {desktopIcons.map((ic) => (
+      <DesktopIcon
+        id={ic.id}
+        label={ic.label}
+        kind={ic.kind}
+        badge={ic.badge}
+        glyph={ic.glyph}
+        color={ic.color}
+      />
+    ))}
+  </div>
+
+  <HeroPlate />
+</main>
+
+<ReadmeWindow />
+<WorkWindow entries={workEntries} />
+<SignalWindow items={signals} />
+<ContactWindow />
+<SnakeWindow />
+
+<Dock />
+
+<style>
+  .dw-desktop {
+    position: fixed;
+    top: 28px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .dw-icon-grid {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    display: grid;
+    grid-template-columns: repeat(1, 84px);
+    gap: 12px;
+    justify-items: center;
+  }
+</style>
+
+<script>
+  import '../scripts/desktop.ts';
+</script>

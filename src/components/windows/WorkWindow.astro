@@ -1,0 +1,193 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Window from '../desktop/Window.astro';
+import WorkRecord from '../desktop/WorkRecord.astro';
+
+export interface Props {
+  entries: CollectionEntry<'work'>[];
+}
+const { entries } = Astro.props;
+---
+<Window id="work" title="Work" x={60} y={60} width={920} height={640}>
+  <div class="dw-work-index">
+    <aside class="dw-work-sidebar" aria-label="Companies">
+      <p class="dw-work-sidebar-title">
+        <span class="dw-work-sidebar-prompt">&gt;_</span> work.log
+      </p>
+      <ul class="dw-work-sidebar-list" role="listbox">
+        {entries.map((e, i) => (
+          <li>
+            <button
+              type="button"
+              class={`dw-work-sidebar-item ${i === 0 ? 'is-active' : ''}`}
+              data-work-index={i}
+              role="option"
+              aria-selected={i === 0}
+            >
+              <span class="dw-work-sidebar-num">[{String(i + 1).padStart(2, '0')}]</span>
+              <span class="dw-work-sidebar-body">
+                <span class="dw-work-sidebar-name" data-scramble>{e.data.company}</span>
+                <span class="dw-work-sidebar-dates">{e.data.startDate} → {e.data.endDate}</span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p class="dw-work-sidebar-count">
+        <span class="dw-work-sidebar-count-num">{entries.length}</span> records
+      </p>
+    </aside>
+
+    <section class="dw-work-detail" aria-live="polite">
+      {entries.map((e, i) => (
+        <div class="dw-work-pane" data-work-pane={i} hidden={i !== 0}>
+          <WorkRecord entry={e} index={i} />
+        </div>
+      ))}
+    </section>
+  </div>
+</Window>
+
+<style>
+  .dw-work-index {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 0;
+    height: 100%;
+    margin: -20px -24px;   /* offset the .dw-body padding so panes go edge-to-edge */
+  }
+
+  /* --- Sidebar --------------------------------------------------------- */
+  .dw-work-sidebar {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.015);
+    padding: 16px 0 12px;
+    overflow-y: auto;
+  }
+  .dw-work-sidebar-title {
+    font-family: "Geist Mono Variable", ui-monospace, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin: 0 16px 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dw-work-sidebar-prompt {
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .dw-work-sidebar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+  .dw-work-sidebar-item {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 16px 10px 12px;
+    background: transparent;
+    border: 0;
+    border-left: 3px solid transparent;
+    color: var(--text);
+    font-family: "Geist Mono Variable", ui-monospace, monospace;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  }
+  .dw-work-sidebar-item:hover {
+    background: rgba(76, 139, 245, 0.06);
+    color: var(--accent);
+  }
+  .dw-work-sidebar-item.is-active {
+    background: rgba(76, 139, 245, 0.10);
+    border-left-color: var(--accent);
+  }
+  .dw-work-sidebar-item.is-active .dw-work-sidebar-name { color: var(--accent); }
+  .dw-work-sidebar-num {
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding-top: 1px;
+  }
+  .dw-work-sidebar-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .dw-work-sidebar-name {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.005em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dw-work-sidebar-dates {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .dw-work-sidebar-count {
+    margin: 12px 16px 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-family: "Geist Mono Variable", ui-monospace, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+  .dw-work-sidebar-count-num { color: var(--accent); font-weight: 700; }
+
+  /* --- Detail pane ----------------------------------------------------- */
+  .dw-work-detail {
+    padding: 20px 24px;
+    overflow-y: auto;
+    min-width: 0;
+  }
+  .dw-work-pane[hidden] { display: none; }
+  .dw-work-pane {
+    animation: dw-pane-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes dw-pane-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+</style>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-work-index]');
+  const panes = document.querySelectorAll<HTMLElement>('[data-work-pane]');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const idx = btn.getAttribute('data-work-index');
+      if (idx === null) return;
+
+      buttons.forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', String(active));
+      });
+
+      panes.forEach((p) => {
+        const match = p.getAttribute('data-work-pane') === idx;
+        if (match) p.removeAttribute('hidden');
+        else p.setAttribute('hidden', '');
+      });
+    });
+  });
+</script>

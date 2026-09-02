@@ -1,0 +1,70 @@
+---
+import type { CollectionEntry } from 'astro:content';
+export interface Props {
+  entry: CollectionEntry<'work'>;
+  index: number;
+}
+const { entry, index } = Astro.props;
+const { Content } = await entry.render();
+const d = entry.data;
+const backers = (d.backers ?? []).map((b) =>
+  typeof b === 'string' ? { name: b, url: undefined } : b,
+);
+const num = String(index + 1).padStart(2, '0');
+---
+<article class="dw-rec">
+  <header class="dw-rec-head">
+    <p class="dw-rec-kicker">
+      <span class="dw-rec-num">[ {num} ]</span>
+      <span class="dw-rec-dot">·</span>
+      <span class="dw-rec-when">{d.startDate} → {d.endDate}</span>
+      <span class="dw-rec-dot">·</span>
+      <span class="dw-rec-loc">{d.location}</span>
+    </p>
+    <h3 class="dw-rec-company" data-scramble>{d.company}</h3>
+    <p class="dw-rec-role">{d.role}</p>
+  </header>
+
+  {d.metrics && d.metrics.length > 0 && (
+    <section class="dw-rec-section">
+      <h4 class="dw-rec-section-title">Impact</h4>
+      <div class="dw-stats" role="list">
+        {d.metrics.map((m) => (
+          <div class="dw-stat" role="listitem">
+            <div class="dw-stat-value">{m.value}</div>
+            <div class="dw-stat-label">{m.label}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="dw-rec-section">
+    <h4 class="dw-rec-section-title">Highlights</h4>
+    <div class="dw-prose">
+      <Content />
+    </div>
+  </section>
+
+  {backers.length > 0 && (
+    <section class="dw-rec-section">
+      <h4 class="dw-rec-section-title">Backed by</h4>
+      <ul class="dw-rec-backers">
+        {backers.map((b) => (
+          b.url
+            ? <li><a class="dw-chip dw-chip-link" href={b.url} target="_blank" rel="noopener noreferrer">{b.name} <span aria-hidden="true">↗</span></a></li>
+            : <li><span class="dw-chip">{b.name}</span></li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {d.stack && d.stack.length > 0 && (
+    <section class="dw-rec-section dw-rec-section-stack">
+      <h4 class="dw-rec-section-title">Stack</h4>
+      <ul class="dw-rec-stack">
+        {d.stack.map((s) => <li>{s}</li>)}
+      </ul>
+    </section>
+  )}
+</article>

@@ -1,0 +1,22 @@
+---
+import Window from '../desktop/Window.astro';
+import { site } from '../../data/site';
+---
+<Window id="contact" title="Contact" x={740} y={60} width={460} height={320}>
+  <div class="dw-contact">
+    <p><span class="dw-contact-prompt">&gt;_</span> email: <a href={`mailto:${site.email}`}>{site.email}</a></p>
+    <p><span class="dw-contact-prompt">&gt;_</span> phone: {site.phone}</p>
+    <p><span class="dw-contact-prompt">&gt;_</span> github: <a href={site.github} target="_blank" rel="noopener noreferrer">github.com ↗</a></p>
+    <p><span class="dw-contact-prompt">&gt;_</span> linkedin: <a href={site.linkedin} target="_blank" rel="noopener noreferrer">linkedin.com ↗</a></p>
+  </div>
+</Window>
+
+<style>
+  .dw-contact {
+    font-family: "Geist Mono Variable", ui-monospace, monospace;
+    font-size: 13px;
+    line-height: 2;
+  }
+  .dw-contact p { margin: 0; }
+  .dw-contact-prompt { color: var(--accent); }
+</style>

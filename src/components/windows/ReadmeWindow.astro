@@ -1,0 +1,63 @@
+---
+import Window from '../desktop/Window.astro';
+---
+<Window id="readme" title="README.txt" x={80} y={80} width={500} height={380} open>
+  <div class="dw-txt">
+    <p class="dw-txt-heading">readme.txt</p>
+    <p class="dw-txt-rule">====================================</p>
+    <p>expertise: backend & AI/ML</p>
+    <p>differentiator: product</p>
+    <p>hobby: UX design</p>
+    <p>
+      Most recently raised ~$5M for my startup (<a class="dw-txt-link" href="https://lore.link" target="_blank" rel="noopener noreferrer">lore.link</a>).
+    </p>
+    <p></p>
+    <p>Separately, I enjoy podcasts on economics.</p>
+    <p></p>
+    <p class="dw-txt-muted">— eof —</p>
+  </div>
+</Window>
+
+<style>
+  .dw-txt {
+    font-family: "Geist Mono Variable", ui-monospace, Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .dw-txt p {
+    margin: 0;
+    white-space: pre-wrap;
+    min-height: 1.7em;
+  }
+  .dw-txt-heading {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .dw-txt-rule {
+    color: var(--muted);
+    opacity: 0.55;
+    user-select: none;
+  }
+  .dw-txt-muted {
+    color: var(--muted);
+    font-style: italic;
+  }
+  .dw-txt-link {
+    display: inline;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(76, 139, 245, 0.55);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .dw-txt-link:hover {
+    text-decoration-color: var(--accent);
+    filter: brightness(1.15);
+  }
+</style>
