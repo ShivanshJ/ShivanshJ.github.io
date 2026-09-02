@@ -218,6 +218,11 @@ const { entries } = Astro.props;
     btn.addEventListener('click', () => {
       const idx = btn.getAttribute('data-work-index');
       if (idx === null) return;
+      // Same "menu open" chirp used when a window opens — only if this
+      // wasn't already the active pane (skip when re-clicking the same row).
+      if (!btn.classList.contains('is-active')) {
+        (window as any).__dwChirp?.();
+      }
 
       buttons.forEach((b) => {
         const active = b === btn;

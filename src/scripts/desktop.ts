@@ -39,6 +39,11 @@ const playOpenSound = () => {
   }
 };
 
+// Expose the chirp on the global so other component scripts (e.g. the
+// Work sidebar's row-click handler) can reuse it without re-implementing
+// the WebAudio boilerplate or importing across Astro scoped scripts.
+(window as any).__dwChirp = playOpenSound;
+
 const bringToFront = (win: HTMLElement) => {
   zTop += 1;
   win.style.zIndex = String(zTop);
