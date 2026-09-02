@@ -33,7 +33,6 @@ const blog = defineCollection({
     date: z.string(),
     description: z.string(),
     topic: z.string(),
-    order: z.number(),
   }),
 });
 

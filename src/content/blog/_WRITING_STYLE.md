@@ -78,14 +78,13 @@ Every post needs:
 ```yaml
 ---
 title: "..."           # follows the title conventions above
-date: "YYYY-MM-DD"     # actual publication date
+date: "YYYY-MM-DD"     # actual publication date — this is what drives sort order
 description: "..."     # one or two sentences, no marketing voice
 topic: "..."           # lowercase, matches an existing topic where possible
-order: N               # 1 = newest; shift older posts when inserting
 ---
 ```
 
-When inserting a new post, update the `order` on every post older than it (+1 each) so the chronological sort holds.
+Posts are sorted automatically by `date` (newest first) in `src/components/Desktop.astro`. Do **not** add an `order` field — the schema no longer accepts it, and adding one has no effect.
 
 ## What to avoid
 
@@ -104,6 +103,6 @@ Ask, in order:
 2. Is there a shorter version that says the same thing? (Usually yes.)
 3. Does the title follow one of the four patterns above?
 4. Does the closing line reframe the post, or just repeat it?
-5. Is the `order` shifted correctly for older posts?
+5. Is the `date` correct? (Sort order is driven by date — no manual `order` field needed.)
 
 If all five are yes, ship it.
