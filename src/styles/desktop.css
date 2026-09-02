@@ -301,17 +301,18 @@ a.dw-chip-link:hover {
 .dw-blog-topic-pill {
   display: inline-block;
   align-self: flex-start;
-  margin-top: 4px;
+  margin-top: 6px;
   font-family: "Geist Mono Variable", ui-monospace, monospace;
-  font-size: 9px;
+  font-size: 10px;
+  font-weight: 700;
   line-height: 1;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--accent);
-  background: rgba(76, 139, 245, 0.10);
-  border: 1px solid rgba(76, 139, 245, 0.28);
+  letter-spacing: 0.10em;
+  color: #ffffff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
   border-radius: 3px;
-  padding: 3px 6px 2px;
+  padding: 4px 7px 3px;
   vertical-align: baseline;
 }
 

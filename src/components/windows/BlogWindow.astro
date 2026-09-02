@@ -95,7 +95,7 @@ const fmtDate = (iso: string) => {
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: 0;
-    height: 100%;
+    height: calc(100% + 40px);
     margin: -20px -24px;
   }
 
@@ -127,7 +127,6 @@ const fmtDate = (iso: string) => {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    flex: 1;
   }
   .dw-blog-sidebar-item {
     width: 100%;
@@ -183,7 +182,7 @@ const fmtDate = (iso: string) => {
   }
   .dw-blog-sidebar-dot { opacity: 0.5; }
   .dw-blog-sidebar-count {
-    margin: 12px 0 0;
+    margin: auto 0 0;
     padding: 10px 16px 12px;
     border-top: 1px solid var(--border);
     font-family: "Geist Mono Variable", ui-monospace, monospace;
