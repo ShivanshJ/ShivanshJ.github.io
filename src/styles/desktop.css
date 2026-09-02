@@ -264,3 +264,36 @@ a.dw-chip-link:hover {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* --- Mobile tweaks --------------------------------------------------- */
+@media (max-width: 768px) {
+  .dw-rec { max-width: none; padding-bottom: 20px; }
+  .dw-rec-head { margin-bottom: 20px; }
+  .dw-rec-company { font-size: 26px; }
+  .dw-rec-role { font-size: 14px; }
+  .dw-rec-section { margin-bottom: 28px; }
+  .dw-rec-kicker { font-size: 10px; }
+
+  .dw-stats {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 10px 2px;
+  }
+  .dw-stat { padding: 6px 8px; }
+  .dw-stat:nth-child(2n) { border-right: none; }
+  .dw-stat-value { font-size: 18px; }
+
+  .dw-prose { font-size: 14px; line-height: 1.6; max-width: none; }
+  .dw-prose ul, .dw-prose ol { gap: 14px; }
+
+  /* Admin tables: switch to single-column stack + horizontal-scroll rows */
+  .dw-adm-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .dw-adm-panel-wide { grid-column: auto !important; }
+  .dw-adm-panel { padding: 10px 12px !important; overflow-x: auto; }
+  .dw-adm-totals {
+    flex-wrap: wrap;
+    gap: 16px !important;
+    padding: 12px 0 !important;
+  }
+  .dw-adm-tot-value { font-size: 22px !important; }
+  .dw-adm table { font-size: 11px !important; min-width: 320px; }
+}

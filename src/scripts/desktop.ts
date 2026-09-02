@@ -46,7 +46,10 @@ const bringToFront = (win: HTMLElement) => {
 
 // Center the window in the viewport based on its declared width/height,
 // keeping the menu bar (28px) clear. Skip if the window has been maximized.
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
 const centerWindow = (win: HTMLElement) => {
+  if (isMobile()) return; // let CSS fill the viewport on mobile
   if (win.dataset.maximized === 'true') return;
   const w = parseFloat(win.style.width) || win.offsetWidth || 640;
   const h = parseFloat(win.style.height) || win.offsetHeight || 440;
@@ -61,6 +64,7 @@ const centerWindow = (win: HTMLElement) => {
 
 // Pick a random on-screen position each time a window is opened fresh.
 const randomizeWindow = (win: HTMLElement) => {
+  if (isMobile()) return; // let CSS fill the viewport on mobile
   if (win.dataset.maximized === 'true') return;
   const w = parseFloat(win.style.width) || win.offsetWidth || 640;
   const h = parseFloat(win.style.height) || win.offsetHeight || 440;
@@ -161,6 +165,7 @@ const makeDraggable = (win: HTMLElement) => {
   });
   handle.addEventListener('pointermove', (e) => {
     if (!dragging) return;
+    if (isMobile()) return; // CSS controls layout on mobile
     const nx = origX + (e.clientX - startX);
     const ny = Math.max(28, origY + (e.clientY - startY)); // don't hide under menu bar
     win.style.left = `${nx}px`;

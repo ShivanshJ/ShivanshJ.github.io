@@ -19,4 +19,10 @@ const { items } = Astro.props;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 12px;
   }
+  @media (max-width: 768px) {
+    .dw-signal-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+  }
 </style>

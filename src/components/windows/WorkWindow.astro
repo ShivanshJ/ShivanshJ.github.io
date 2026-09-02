@@ -166,6 +166,48 @@ const { entries } = Astro.props;
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: none; }
   }
+
+  @media (max-width: 768px) {
+    .dw-work-index {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      margin: -14px -16px;
+    }
+    .dw-work-sidebar {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex-direction: row;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .dw-work-sidebar::-webkit-scrollbar { display: none; }
+    .dw-work-sidebar-title,
+    .dw-work-sidebar-count { display: none; }
+    .dw-work-sidebar-list {
+      flex-direction: row;
+      gap: 6px;
+      padding: 0 10px;
+      flex-wrap: nowrap;
+    }
+    .dw-work-sidebar-list > li { flex: 0 0 auto; }
+    .dw-work-sidebar-item {
+      padding: 6px 10px;
+      border-left: 0;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      border-radius: 4px;
+    }
+    .dw-work-sidebar-item.is-active {
+      border-left-color: transparent;
+      border-bottom-color: var(--accent);
+    }
+    .dw-work-sidebar-body { flex-direction: row; gap: 6px; align-items: center; }
+    .dw-work-sidebar-dates { display: none; }
+    .dw-work-detail { padding: 16px; }
+  }
 </style>
 
 <script>

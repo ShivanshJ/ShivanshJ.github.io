@@ -124,6 +124,20 @@ import Window from '../desktop/Window.astro';
     justify-content: center;
     gap: 4px;
   }
+  @media (max-width: 768px) {
+    .dw-snake-stage {
+      max-width: calc(100vw - 40px);
+      max-height: calc(100vw - 40px);
+      width: 320px;
+      height: 320px;
+    }
+    #dw-snake-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   .dw-kbd {
     display: inline-block;
     min-width: 20px;

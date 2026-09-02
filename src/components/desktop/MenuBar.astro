@@ -9,11 +9,11 @@
       </svg>
     </button>
     <button type="button" class="dw-menu-item dw-menu-item-bold" data-scramble>Portfolio</button>
-    <button type="button" class="dw-menu-item" data-scramble>File</button>
-    <button type="button" class="dw-menu-item" data-scramble>Edit</button>
-    <button type="button" class="dw-menu-item" data-scramble>View</button>
-    <button type="button" class="dw-menu-item" data-scramble>Window</button>
-    <button type="button" class="dw-menu-item" data-scramble>Help</button>
+    <button type="button" class="dw-menu-item dw-menu-hide-mobile" data-scramble>File</button>
+    <button type="button" class="dw-menu-item dw-menu-hide-mobile" data-scramble>Edit</button>
+    <button type="button" class="dw-menu-item dw-menu-hide-mobile" data-scramble>View</button>
+    <button type="button" class="dw-menu-item dw-menu-hide-mobile" data-scramble>Window</button>
+    <button type="button" class="dw-menu-item dw-menu-hide-mobile" data-scramble>Help</button>
   </div>
   <div class="dw-menubar-right">
     <span class="dw-menu-icon" aria-hidden="true">􀋚</span>
@@ -72,6 +72,13 @@
     font-variant-numeric: tabular-nums;
     min-width: 130px;
     text-align: right;
+  }
+  @media (max-width: 768px) {
+    .dw-menu-hide-mobile { display: none; }
+    .dw-menu-icon { display: none; }
+    .dw-menubar { padding: 0 8px; }
+    #dw-clock { min-width: 0; font-size: 12px; padding: 3px 6px; }
+    .dw-menu-item { padding: 3px 6px; }
   }
 </style>
 

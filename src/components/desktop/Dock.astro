@@ -124,4 +124,24 @@ const items: DockItem[] = [
     30% { transform: translateY(-16px) scale(1.1); }
     60% { transform: translateY(-4px); }
   }
+
+  @media (max-width: 768px) {
+    .dw-dock {
+      bottom: 8px;
+      gap: 4px;
+      padding: 4px 6px;
+      max-width: calc(100vw - 12px);
+      border-radius: 14px;
+    }
+    .dw-dock-item {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      font-size: 18px;
+    }
+    .dw-dock-img { width: 24px; height: 24px; }
+    .dw-dock-sep { height: 34px; margin: 0 2px; }
+    .dw-dock-tooltip { display: none; }
+    .dw-dock-item:hover { transform: none; }
+  }
 </style>

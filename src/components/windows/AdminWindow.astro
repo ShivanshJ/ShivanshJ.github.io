@@ -200,11 +200,13 @@ const endpoint = site.analyticsEndpoint;
       const zNow = Math.max(...Array.from(document.querySelectorAll('.dw-window'))
         .map((w) => parseInt(w.style.zIndex || '100', 10))) + 1;
       win.style.zIndex = String(zNow);
-      // center it (menu bar 28, dock ~90)
-      const w = parseFloat(win.style.width) || 860;
-      const h = parseFloat(win.style.height) || 620;
-      win.style.left = `${Math.max(8, (window.innerWidth - w) / 2)}px`;
-      win.style.top = `${Math.max(36, 28 + (window.innerHeight - 118 - h) / 2)}px`;
+      // center it (menu bar 28, dock ~90) — skip on mobile; CSS fills viewport
+      if (!window.matchMedia('(max-width: 768px)').matches) {
+        const w = parseFloat(win.style.width) || 860;
+        const h = parseFloat(win.style.height) || 620;
+        win.style.left = `${Math.max(8, (window.innerWidth - w) / 2)}px`;
+        win.style.top = `${Math.max(36, 28 + (window.innerHeight - 118 - h) / 2)}px`;
+      }
     };
 
     const setStatus = (text, cls) => {
