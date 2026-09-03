@@ -1,0 +1,28 @@
+---
+title: "Agents boxed in: why containers were never sandboxes"
+date: "2026-07-21"
+description: "Containers share a kernel, and that was fine until agents started writing the code. MicroVMs — and CubeSandbox in particular — are what a sandbox actually looks like."
+topic: "tech"
+---
+
+An LLM writes a Python script. You run it. If it does something clever with `/proc`, whose machine does it own?
+
+For a decade the honest answer has been: **yours**. A container is not a wall around a program; it is a nametag. Two containers on the same host share one kernel, and one kernel bug is one escape away from the whole machine. That was fine when the code inside was written by people you paid. It stops being fine the moment the code is written by a model that read the internet.
+
+Here is the whole idea in plain words.
+
+A **container** is a program wearing a costume. A **microVM** is a program in its own room. The costume is cheap and fast to put on; the room takes longer to build, but no one else is in it.
+
+For years the room lost on economics. A full VM booted in seconds and ate hundreds of megabytes just to sit there, so nobody used one per request. AWS's [Firecracker](https://firecracker-microvm.github.io/) was the first serious argument that the room could be cheap too — it strips a VM down to what a workload actually needs and boots it in around 125ms with about 5MB of overhead. That is what Lambda runs on. It is also what makes the current agent sandboxes possible at all.
+
+[CubeSandbox](https://wavespeed.ai/blog/posts/what-is-cubesandbox-for-ai-agents/), which Tencent open-sourced in April, pushes the numbers further: a cold start under 60ms, per-instance overhead under 5MB, roughly 2,000 concurrent sandboxes on a 96-core box. Each one is a real KVM guest with its own kernel. If the model inside writes `rm -rf /`, it deletes a room that will be thrown away in a second anyway.
+
+The interesting design choice isn't the benchmark. It's that CubeSandbox speaks the [E2B](https://e2b.dev/) SDK protocol. You migrate by changing one environment variable. As [Samuel Lawrentz put it](https://samuellawrentz.com/blog/microvm-sandboxes-untrusted-code/), "infrastructure wins by being a one-line switch away, not by being 3% faster in a chart."
+
+So the question "should I still use containers?" splits cleanly:
+
+1. **Your code, your team, your registry.** Keep the container. The threat model is a bug, not an adversary. Kubernetes is fine.
+2. **Code from a model, a user, a plugin, a PR.** Use a microVM. The threat model is an adversary, and the shared kernel is exactly the wall they will walk through.
+3. **A CI runner that executes arbitrary build scripts.** MicroVM. You already knew, you were just hoping.
+
+The old tradeoff — fast containers or safe VMs, pick one — quietly stopped being true somewhere around Firecracker and is thoroughly dead with CubeSandbox. Which means the excuse for running untrusted code in a container is also dead. It was always a costume; it never was a wall.
