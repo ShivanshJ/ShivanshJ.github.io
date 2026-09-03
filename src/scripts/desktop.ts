@@ -215,9 +215,16 @@ const init = () => {
     // Auto-open windows that ship with is-open
     if (win.classList.contains('is-open')) {
       const id = win.dataset.windowId;
-      if (id) openWindows.add(id);
-      centerWindow(win);
-      bringToFront(win);
+      // On mobile the readme takes over the whole viewport, which is a poor
+      // first impression — leave it closed and let the user tap to open it.
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      if (isMobile && id === 'readme') {
+        win.classList.remove('is-open');
+      } else {
+        if (id) openWindows.add(id);
+        centerWindow(win);
+        bringToFront(win);
+      }
     }
 
     // Traffic light actions
