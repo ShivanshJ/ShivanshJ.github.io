@@ -28,7 +28,7 @@ npm run preview
 
 **Automatic.** Every `git push origin main` triggers
 `.github/workflows/deploy.yml`, which builds `dist/` and publishes it to
-GitHub Pages. No manual step. Live URL: https://shivanshj.github.io/.
+GitHub Pages. No manual step. Live URL: https://shivanshj.github.io/?cmp=github-repo.
 
 Nothing else deploys the site. Do **not** run `astro add cloudflare` — it
 adds a Cloudflare adapter to `astro.config.mjs`, a `wrangler.jsonc` at
