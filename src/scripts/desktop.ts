@@ -39,10 +39,36 @@ const playOpenSound = () => {
   }
 };
 
+// Descends (A6 -> E6) to mirror-invert the ascending open chirp.
+const playCloseSound = () => {
+  const ctx = getCtx();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+
+  const now = ctx.currentTime;
+  const notes: Array<[number, number]> = [
+    [1760, 0.00],
+    [1320, 0.05],
+  ];
+  for (const [freq, offset] of notes) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, now + offset);
+    gain.gain.exponentialRampToValueAtTime(0.06, now + offset + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.06);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now + offset);
+    osc.stop(now + offset + 0.08);
+  }
+};
+
 // Expose the chirp on the global so other component scripts (e.g. the
 // Work sidebar's row-click handler) can reuse it without re-implementing
 // the WebAudio boilerplate or importing across Astro scoped scripts.
 (window as any).__dwChirp = playOpenSound;
+(window as any).__dwChirpClose = playCloseSound;
 // __dwOpen is exposed further down, AFTER openWindow is declared, to
 // avoid a temporal-dead-zone ReferenceError on script load.
 
@@ -133,6 +159,7 @@ const openWindow = (id: string, sourceEl?: HTMLElement) => {
 (window as any).__dwOpen = openWindow;
 
 const closeWindow = (id: string) => {
+  playCloseSound();
   const win = document.getElementById(`dw-window-${id}`);
   if (!win) return;
   win.classList.remove('is-open');
