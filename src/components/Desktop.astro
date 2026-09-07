@@ -23,6 +23,7 @@ const blogEntries = (await getCollection('blog')).sort(
 
 const signals: Signal[] = [
   { label: 'education',   title: 'Cornell University — MS, CS',    detail: '3.8 GPA · Merit Scholarship',                     year: '2022' },
+  { label: 'startup',     title: 'Tanagram Lore',                  detail: 'Raised ~$5M · built a team of 7',                 year: '2026', href: 'https://lore.link' },
   { label: 'startup',     title: 'Verda.ai',                       detail: 'Blockchain startup battling fake video & images', year: '2021', href: 'https://verda.ai' },
   { label: 'hustle',      title: 'Bootstrapped crypto transfer',   detail: '30 users · $80k processed',                       year: '2023', href: 'https://stellar-transfer.web.app/' },
   { label: 'award',       title: '1st — Expedia Global Hackathon', detail: 'NLP travel planning bot · 160 participants',      year: '2021' },
