@@ -1,0 +1,35 @@
+---
+title: "A fair shuffle: 52! is the ceiling"
+date: "2020-01-15"
+description: "A shuffle only needs 52! random paths, not 52^52. The extra work in a naive shuffle isn't safety — it's bias."
+topic: "math"
+---
+
+Someone showed me this and asked whether it was a good shuffle:
+
+```js
+function foo(a) {
+  for (let i = 0; i < a.length; i++) {
+    // Math.random() -> [0,1)
+    let j = Math.floor(Math.random() * (i + 1));
+    let temp = a[i];
+    a[i] = a[j];
+    a[j] = temp;
+  }
+  return a;
+}
+```
+
+At step `i`, position `i` swaps with some `j` picked uniformly from `[0, i]`. First step: 1 choice. Second: 2 choices. Then 3, 4, ..., up to `n`. Multiply them together and the loop has exactly `n!` distinct random paths. That's *Fisher-Yates*.
+
+Why does that matter? **A deck of `n` cards has exactly `n!` orderings.** `n!` random paths, `n!` outcomes — one-to-one. Every permutation comes out with probability exactly `1/n!`. No bias, no waste.
+
+The naive version people usually write picks `j` from the *full* range every time:
+
+```js
+let j = Math.floor(Math.random() * a.length);
+```
+
+Now the loop has `n^n` paths mapping onto `n!` permutations. For `n = 52`, that's `52^52 ≈ 10^89` paths for only `52! ≈ 8 × 10^67` decks — a thousand billion times more randomness than the problem needs. And since `n^n` is not divisible by `n!`, those extra paths don't distribute evenly. Some permutations end up more likely than others.
+
+More randomness isn't more fairness. Past `n!`, you're not shuffling harder — you're just breaking the arithmetic. Fisher-Yates stops exactly where it should.
