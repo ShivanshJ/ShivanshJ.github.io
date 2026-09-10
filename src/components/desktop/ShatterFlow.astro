@@ -1,0 +1,365 @@
+---
+// CRT-flavored shatter/reform bar animation.
+//
+// Grid of thin vertical bars drifts left. As each bar crosses a "transition
+// band", it dissolves into a cloud of tiny squares whose Y offset and alpha
+// are driven by 2D value-noise, then reassembles on the other side.
+// Palette is phosphor green on transparent, so the PixelSky wallpaper shows
+// through underneath. A faint scanline overlay sells the CRT read-out feel.
+//
+// Inspired by the hero on runlayer.com — same mechanism, CRT palette.
+---
+<div class="dw-shatter" aria-hidden="true">
+  <canvas class="dw-shatter-canvas"></canvas>
+  <div class="dw-shatter-scanlines"></div>
+</div>
+
+<style>
+  .dw-shatter {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 240px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.85;
+    mix-blend-mode: screen;
+    -webkit-mask-image: linear-gradient(to right,
+      transparent 0%,
+      #000 12%,
+      #000 88%,
+      transparent 100%);
+            mask-image: linear-gradient(to right,
+      transparent 0%,
+      #000 12%,
+      #000 88%,
+      transparent 100%);
+  }
+  .dw-shatter-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .dw-shatter-scanlines {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.25) 0px,
+      rgba(0, 0, 0, 0.25) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: multiply;
+    opacity: 0.5;
+  }
+  @media (max-width: 768px) {
+    .dw-shatter {
+      height: 160px;
+      opacity: 0.7;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dw-shatter { display: none; }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('.dw-shatter');
+  const canvas = root?.querySelector<HTMLCanvasElement>('.dw-shatter-canvas');
+  if (root && canvas) {
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (ctx) {
+      // Tunables — ported from runlayer.com's config with CRT tweaks.
+      //
+      // Flow: bars enter at LEFT as tall, noise-scattered streaks and
+      // COALESCE past the transition line into a clean grid of tiny
+      // squares on the right. Not symmetric shatter — directional.
+      const cfg = {
+        pitch: 8,            // grid spacing (px, css units)
+        rows: 14,            // vertical rows
+        speed: 44,           // horizontal drift px/s
+        transitionX: 0.615,  // transition center (0..1 of width) — left is scattered, right is grid
+        transitionSpan: 90,  // width of the transition ramp (px)
+        transitionJitter: 55,
+        scatterY: 0.9,       // vertical scatter amount for streak state
+        noiseScale: 0.0055,
+        noiseDrift: 0.2,
+        barHmin: 10,
+        barHmax: 14,
+        squareH: 3,
+        yScale: 3.4,
+        // Hover pill extend
+        pillDur: 0.9,        // seconds
+        pillGrow: 4.2,       // multiplier on bar height at peak
+        hoverRadiusX: 60,    // px — how wide a cluster of columns lights up
+        hoverRadiusY: 50,    // px — how far above/below cursor still counts
+        hoverDelayStep: 0.05,// seconds per column-step from cursor
+        // CRT palette (rgb triplets)
+        colorBar:     [128, 255, 176],   // bright phosphor green (bar/streak)
+        colorScatter: [ 90, 220, 150],   // dimmer green (settled squares)
+        colorDark:    [ 12,  60,  40],   // rare dim dot
+        darkChance: 0.03,
+      };
+
+      // Deterministic hash + 2D value noise (smooth-interp'd).
+      const hash = (x: number, y: number): number => {
+        let h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+        return h - Math.floor(h);
+      };
+      const smooth = (t: number) => t * t * (3 - 2 * t);
+      const vnoise = (x: number, y: number): number => {
+        const xi = Math.floor(x), yi = Math.floor(y);
+        const xf = x - xi,        yf = y - yi;
+        const a = hash(xi,     yi);
+        const b = hash(xi + 1, yi);
+        const c = hash(xi,     yi + 1);
+        const d = hash(xi + 1, yi + 1);
+        const u = smooth(xf), v = smooth(yf);
+        return (a + (b - a) * u) + ((c - a) + (a - b - c + d) * u) * v;
+        // returns 0..1 -> shift to -1..1 at call site if needed
+      };
+      // rand01 deterministic per bar
+      const rseed = (s: number) => {
+        const x = Math.sin(s * 999.13) * 43758.5453;
+        return x - Math.floor(x);
+      };
+      // smoothstep(edge0, edge1, x) -> 0..1
+      const smoothstep = (e0: number, e1: number, x: number) => {
+        const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+        return t * t * (3 - 2 * t);
+      };
+
+      type Bar = {
+        col: number;
+        row: number;
+        seed: number;
+        snapOffset: number;
+        barH: number;
+        dark: boolean;
+        pillT: number;      // time elapsed since pill trigger, s (>= pillDur = inactive)
+        pillDelay: number;  // delay before growing (staggered from cursor)
+      };
+
+      let width = 0, height = 0, dpr = 1;
+      let cols = 0;
+      let bars: Bar[] = [];
+      let elapsed = 0;
+      const cycleLen = () => cols * cfg.pitch; // width of grid tile pattern
+
+      const rebuild = () => {
+        const rect = canvas.getBoundingClientRect();
+        dpr = Math.min(2, window.devicePixelRatio || 1);
+        width = Math.max(1, Math.floor(rect.width));
+        height = Math.max(1, Math.floor(rect.height));
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        cols = Math.ceil(width / cfg.pitch) + 4;
+        // vertically center the rows band
+        const totalH = cfg.rows * cfg.pitch;
+        const topY = (height - totalH) / 2;
+
+        bars = [];
+        let f = 0;
+        for (let c = 0; c < cols; c++) {
+          for (let r = 0; r < cfg.rows; r++) {
+            f++;
+            const seed = f;
+            bars.push({
+              col: c,
+              row: r,
+              seed,
+              snapOffset: (rseed(seed) - 0.5) * 2 * cfg.transitionJitter,
+              barH: cfg.barHmin + rseed(seed + 7) * (cfg.barHmax - cfg.barHmin),
+              dark: rseed(seed + 13) < cfg.darkChance,
+              pillT: cfg.pillDur + 1,
+              pillDelay: 0,
+            });
+            // homeY computed on draw from row + topY (so resize is cheap)
+            (bars[bars.length - 1] as any).homeY = topY + r * cfg.pitch + cfg.pitch / 2;
+          }
+        }
+      };
+
+      // Pointer state (lerped for a floaty follow).
+      const pointer = {
+        active: false,
+        tx: 0, ty: 0,   // target (css px, canvas-local)
+        cx: 0, cy: 0,   // current (lerped)
+      };
+
+      const triggerPillsAt = (px: number, py: number) => {
+        // Column-based hover: for each bar, measure X distance from the
+        // cursor (with wrap) and Y distance from the row's home line.
+        // Bars within the ellipse retrigger a pill extend if their prior
+        // pill has finished. Whole columns light up together, staggered
+        // by distance from the cursor's column.
+        const cyc = cycleLen();
+        for (const b of bars) {
+          const homeY = (b as any).homeY as number;
+          const dyp = Math.abs(homeY - py);
+          if (dyp > cfg.hoverRadiusY) continue;
+
+          const baseX = b.col * cfg.pitch;
+          let x = baseX + ((elapsed * cfg.speed) % cyc);
+          if (x > width + cfg.pitch * 2) x -= cyc;
+          const signedDx = x - px;
+          if (Math.abs(signedDx) > cfg.hoverRadiusX) continue;
+
+          if (b.pillT > cfg.pillDur) {
+            b.pillT = 0;
+            // Directional stagger: bars LEFT of cursor fire immediately;
+            // bars RIGHT of cursor delay proportional to distance.
+            // Ripple thus travels left→right, matching the bar flow.
+            const rightSide = Math.max(0, signedDx) / cfg.hoverRadiusX;
+            b.pillDelay = rightSide * cfg.hoverDelayStep * 4;
+          }
+        }
+      };
+
+      const draw = (dt: number) => {
+        elapsed += dt;
+        ctx.clearRect(0, 0, width, height);
+
+        // Track cursor 1:1 — no smoothing lag; the stagger comes from
+        // per-column pillDelay, not from a laggy pointer position.
+        pointer.cx = pointer.tx;
+        pointer.cy = pointer.ty;
+
+        const bandCenter = width * cfg.transitionX;
+        const bandHalf = cfg.transitionSpan / 2;
+        const cyc = cycleLen();
+        const bar = cfg.colorBar, sc = cfg.colorScatter, dk = cfg.colorDark;
+
+        for (const b of bars) {
+          const baseX = b.col * cfg.pitch;
+          let x = baseX + ((elapsed * cfg.speed) % cyc);
+          if (x > width + cfg.pitch * 2) x -= cyc;
+          if (x < -cfg.pitch * 2) continue;
+
+          // Directional transition:
+          //   left of band  → i = 0, s = 1  (tall scattered streaks)
+          //   right of band → i = 1, s = 0  (clean tiny grid squares)
+          const bandEdge = bandCenter + b.snapOffset;
+          const i = smoothstep(bandEdge - bandHalf, bandEdge + bandHalf, x);
+          const s = 1 - i;
+
+          // Pill extend (hover-triggered)
+          let pillMul = 1;
+          if (b.pillT <= cfg.pillDur) {
+            b.pillT += dt;
+            const eff = b.pillT - b.pillDelay;
+            if (eff > 0 && eff < cfg.pillDur) {
+              const pt = eff / cfg.pillDur;
+              // Asymmetric: snap up in first 20% of the duration, decay
+              // slowly over the remaining 80%. Onset reads as immediate
+              // instead of "ramping in" through a symmetric triangle.
+              const tri = pt < 0.2 ? pt / 0.2 : (1 - pt) / 0.8;
+              pillMul = 1 + (cfg.pillGrow - 1) * smooth(tri);
+            }
+          }
+
+          // Noise-driven Y scatter, active on the LEFT (streak) side.
+          let dy = 0, dyAlpha = 0;
+          if (s > 0.006) {
+            const na = (x + elapsed * cfg.speed * 0.35) * cfg.noiseScale;
+            const nb = 0.37 * b.seed + elapsed * cfg.noiseDrift;
+            const n1 = vnoise(3.1 * na, nb) * 2 - 1;
+            const n2 = vnoise(5.3 * na + 9.1, nb + 4.7) * 2 - 1;
+            dy = n1;
+            dyAlpha = 0.34 + 0.34 * n2;
+          }
+
+          const homeY = (b as any).homeY as number;
+          const y = homeY + (height * 0.22) * dy * cfg.scatterY * s;
+
+          // Height: tall bar on the left (s dominant), tiny square on the right (i dominant).
+          // pillMul multiplies the final height so hover-grow is visible on both sides.
+          const hFinal = (b.barH * s + cfg.squareH * i * cfg.yScale * 0.25) * pillMul;
+
+          // Alpha: streaks flicker via noise on the left, solid on the right.
+          const a = i + s * Math.max(0.04, dyAlpha);
+          if (a <= 0.01) continue;
+
+          // Color: bar/streak color on left, cleaner phosphor on right.
+          const rC = bar[0] * s + sc[0] * i;
+          const gC = bar[1] * s + sc[1] * i;
+          const bC = bar[2] * s + sc[2] * i;
+          let rr = rC, gg = gC, bb = bC;
+          if (b.dark) { rr = dk[0]; gg = dk[1]; bb = dk[2]; }
+
+          const w = 1.4;
+          ctx.fillStyle = `rgba(${rr | 0},${gg | 0},${bb | 0},${Math.min(1, a).toFixed(3)})`;
+          ctx.fillRect(x - w / 2, y - hFinal / 2, w, hFinal);
+        }
+
+        // Continuously light up bars near the current pointer (bars flow
+        // under a stationary cursor, so we retrigger every frame).
+        if (pointer.active) triggerPillsAt(pointer.cx, pointer.cy);
+      };
+
+      // Pause when tab hidden or when strip is off-screen.
+      let running = false;
+      let raf = 0;
+      let lastTs = performance.now();
+      const tick = (now: number) => {
+        const dt = Math.min(0.05, (now - lastTs) / 1000);
+        lastTs = now;
+        draw(dt);
+        raf = requestAnimationFrame(tick);
+      };
+      const start = () => {
+        if (running) return;
+        running = true;
+        lastTs = performance.now();
+        raf = requestAnimationFrame(tick);
+      };
+      const stop = () => {
+        if (!running) return;
+        running = false;
+        cancelAnimationFrame(raf);
+      };
+
+      // Pointer tracking — listen at window level (canvas is
+      // pointer-events: none so it doesn't block the desktop icons/windows).
+      const isTouch = matchMedia('(hover: none)').matches;
+      if (!isTouch) {
+        window.addEventListener('pointermove', (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const px = e.clientX - rect.left;
+          const py = e.clientY - rect.top;
+          // Only "active" when the pointer is inside (or near) the strip.
+          if (py >= -40 && py <= rect.height + 40 && px >= 0 && px <= rect.width) {
+            pointer.active = true;
+            pointer.tx = px;
+            pointer.ty = py;
+          } else {
+            pointer.active = false;
+          }
+        }, { passive: true });
+        window.addEventListener('pointerleave', () => { pointer.active = false; });
+      }
+
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) start(); else stop();
+        }
+      }, { threshold: 0.01 });
+
+      const ro = new ResizeObserver(() => rebuild());
+
+      rebuild();
+      io.observe(root);
+      ro.observe(root);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stop();
+        else start();
+      });
+    }
+  }
+</script>
