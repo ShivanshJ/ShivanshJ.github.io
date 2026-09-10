@@ -123,15 +123,17 @@ const openWindow = (id: string, sourceEl?: HTMLElement) => {
   // looking at just because they clicked its dock icon again.
   if (!wasOpen) {
     if (win.dataset.openFullscreen === 'true') {
-      // Auto-fullscreen: expand to fill the desktop but leave ~130px on
-      // the right so the desktop icon column stays visible. Does NOT
-      // flip win.dataset.maximized — the green traffic-light still
-      // behaves normally (toggles true fullscreen).
+      // Auto-fullscreen: fill the desktop end-to-end, leaving only the
+      // menu bar above and the dock below visible. Does NOT flip
+      // win.dataset.maximized — the green traffic-light still toggles
+      // true fullscreen normally.
       if (win.dataset.maximized !== 'true' && !isMobile()) {
-        win.style.left = '16px';
-        win.style.top = '40px';
-        win.style.width = 'calc(100vw - 140px)';
-        win.style.height = 'calc(100vh - 100px)';
+        win.style.left = '0px';
+        win.style.top = '0px';
+        win.style.width = '100vw';
+        win.style.height = '100vh';
+        // Lift above menu bar (1000) and dock (900) so it fully covers them.
+        zTop = Math.max(zTop, 1100);
       }
     } else if (id === 'readme') {
       centerWindow(win);
