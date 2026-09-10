@@ -220,7 +220,12 @@ import { site } from '../../data/site.ts';
     if (!apple || !modal || !form || !input || !errEl) return;
 
     const goAdmin = (token) => {
-      window.location.href = '/?admin=' + encodeURIComponent(token);
+      // URL updated so the panel is bookmarkable; window opens via the
+      // shared manager, then admin-specific data fetch runs.
+      history.replaceState(null, '', '/?admin=' + encodeURIComponent(token));
+      window.__dwOpen('admin');
+      window.__dwLoadAdmin(token);
+      closeModal();
     };
 
     const openModal = () => {

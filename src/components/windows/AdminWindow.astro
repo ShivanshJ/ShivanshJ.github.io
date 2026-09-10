@@ -1,7 +1,7 @@
 ---
-// Hidden admin window. Only opens (and only fetches data) when the
-// visitor loads the page with `?admin=<TOKEN>`. No visible desktop icon
-// means casual visitors don't even know the panel exists.
+// Hidden admin window. No visible desktop icon — opens either via the
+// menu-bar apple flow (window.__dwLoadAdmin) or by loading the page
+// with `?admin=<TOKEN>`. Data fetch requires a valid token either way.
 import Window from '../desktop/Window.astro';
 import { site } from '../../data/site';
 
@@ -190,31 +190,14 @@ const endpoint = site.analyticsEndpoint;
 </style>
 
 <script define:vars={{ endpoint }}>
-  // Only activate when the page URL has ?admin=<TOKEN>.
-  const key = new URLSearchParams(location.search).get('admin');
-  if (!key) {
-    // no key → do nothing; window stays hidden, no fetch
-  } else {
-    const win = document.getElementById('dw-window-admin');
+  // Fetch + populate admin data given a token. Opening the window is the
+  // window manager's job (window.__dwOpen('admin')) — this function only
+  // handles the auth'd data load that's unique to admin.
+  const loadAdmin = (key) => {
+    if (!key) return;
     const status = document.getElementById('dw-adm-status');
     const totals = document.getElementById('dw-adm-totals');
     const grid = document.getElementById('dw-adm-grid');
-
-    // Open the window using the same z-index counter logic used elsewhere
-    const openIt = () => {
-      if (!win) return;
-      win.classList.add('is-open');
-      const zNow = Math.max(...Array.from(document.querySelectorAll('.dw-window'))
-        .map((w) => parseInt(w.style.zIndex || '100', 10))) + 1;
-      win.style.zIndex = String(zNow);
-      // center it (menu bar 28, dock ~90) — skip on mobile; CSS fills viewport
-      if (!window.matchMedia('(max-width: 768px)').matches) {
-        const w = parseFloat(win.style.width) || 860;
-        const h = parseFloat(win.style.height) || 620;
-        win.style.left = `${Math.max(8, (window.innerWidth - w) / 2)}px`;
-        win.style.top = `${Math.max(36, 28 + (window.innerHeight - 118 - h) / 2)}px`;
-      }
-    };
 
     const setStatus = (text, cls) => {
       if (!status) return;
@@ -299,28 +282,34 @@ const endpoint = site.analyticsEndpoint;
                 : `<button class="dw-adm-del" data-del="${escapeAttr(r.campaign)}" title="delete all hits for ${escapeAttr(r.campaign)}" aria-label="delete campaign ${escapeAttr(r.campaign)}">×</button>` },
           ]);
 
-          // Wire up delete buttons (fresh set each render)
           document.querySelectorAll('#dw-adm-tbl-campaign [data-del]').forEach((btn) => {
             btn.addEventListener('click', () => deleteCampaign(btn.getAttribute('data-del')));
           });
-        setRows('dw-adm-tbl-country',  data.by_country,  [{ val: (r) => r.country }, { val: (r) => r.n, cls: 'n' }]);
-        setRows('dw-adm-tbl-browser',  data.by_browser,  [{ val: (r) => r.browser }, { val: (r) => r.n, cls: 'n' }]);
-        setRows('dw-adm-tbl-os',       data.by_os,       [{ val: (r) => r.os },      { val: (r) => r.n, cls: 'n' }]);
-        setRows('dw-adm-tbl-device',   data.by_device,   [{ val: (r) => r.device },  { val: (r) => r.n, cls: 'n' }]);
-        setRows('dw-adm-tbl-referrer', data.by_referrer, [{ val: (r) => fmtRef(r.referrer) }, { val: (r) => r.n, cls: 'n' }]);
-        setRows('dw-adm-tbl-recent',   data.recent,      [
-          { val: (r) => fmtTs(r.ts) },
-          { val: (r) => r.campaign ?? '—' },
-          { val: (r) => [r.city, r.country].filter(Boolean).join(', ') || '—' },
-          { val: (r) => `${r.browser} / ${r.os}` },
-          { val: (r) => fmtRef(r.referrer) },
-        ]);
+
+          setRows('dw-adm-tbl-country',  data.by_country,  [{ val: (r) => r.country }, { val: (r) => r.n, cls: 'n' }]);
+          setRows('dw-adm-tbl-browser',  data.by_browser,  [{ val: (r) => r.browser }, { val: (r) => r.n, cls: 'n' }]);
+          setRows('dw-adm-tbl-os',       data.by_os,       [{ val: (r) => r.os },      { val: (r) => r.n, cls: 'n' }]);
+          setRows('dw-adm-tbl-device',   data.by_device,   [{ val: (r) => r.device },  { val: (r) => r.n, cls: 'n' }]);
+          setRows('dw-adm-tbl-referrer', data.by_referrer, [{ val: (r) => fmtRef(r.referrer) }, { val: (r) => r.n, cls: 'n' }]);
+          setRows('dw-adm-tbl-recent',   data.recent,      [
+            { val: (r) => fmtTs(r.ts) },
+            { val: (r) => r.campaign ?? '—' },
+            { val: (r) => [r.city, r.country].filter(Boolean).join(', ') || '—' },
+            { val: (r) => `${r.browser} / ${r.os}` },
+            { val: (r) => fmtRef(r.referrer) },
+          ]);
         })
         .catch((err) => setStatus(`error: ${err.message}`, 'err'));
     };
 
-    openIt();
     setStatus('loading…');
     loadStats();
+  };
+
+  window.__dwLoadAdmin = loadAdmin;
+  const urlKey = new URLSearchParams(location.search).get('admin');
+  if (urlKey) {
+    if (typeof window.__dwOpen === 'function') window.__dwOpen('admin');
+    loadAdmin(urlKey);
   }
 </script>
