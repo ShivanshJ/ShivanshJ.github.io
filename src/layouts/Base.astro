@@ -51,11 +51,19 @@ const {
       // No ?cmp param → recorded as 'main-page'.
       (() => {
         const params = new URLSearchParams(location.search);
+        const raw = params.get('cmp') || params.get('campaign');
+
+        if (params.has('cmp') || params.has('campaign')) {
+          params.delete('cmp');
+          params.delete('campaign');
+          const qs = params.toString();
+          history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+        }
+
         if (params.get('dnt') === '1') { localStorage.setItem('dnt', '1'); return; }
         if (localStorage.getItem('dnt') === '1') return;
         if (params.has('admin')) return;   // own admin panel visit
 
-        const raw = params.get('cmp') || params.get('campaign');
         const campaign = (raw && raw.trim()) ? raw.trim().slice(0, 64) : 'main-page';
 
         let sid = localStorage.getItem('sid');
