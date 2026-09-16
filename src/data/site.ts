@@ -12,6 +12,7 @@ export const site = {
   linkedin: 'https://linkedin.com/in/ShivanshJ',
   behance: 'https://www.behance.net/ShivanshJ',
 
+  url: 'https://shivanshj.github.io',
   themeColor: '#232323',
 
   // Cloudflare Worker that records hits and serves /stats.
