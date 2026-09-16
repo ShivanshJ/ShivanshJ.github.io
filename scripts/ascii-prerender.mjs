@@ -103,11 +103,11 @@ function runConverter(bin, input, outFile) {
 
 const bin = findBin();
 if (!bin) {
-  console.error(
-    '✗ ascii-image-converter not found.\n' +
+  console.warn(
+    '✗ ascii-image-converter not found — skipping ASCII prerender.\n' +
     '  Install: go install github.com/TheZoraiz/ascii-image-converter@latest',
   );
-  process.exit(1);
+  process.exit(0);
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
