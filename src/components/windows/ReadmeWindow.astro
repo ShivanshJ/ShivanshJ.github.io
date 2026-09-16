@@ -3,8 +3,9 @@ import Window from '../desktop/Window.astro';
 ---
 <Window id="readme" title="README.txt" x={80} y={80} width={500} height={380} open>
   <div class="dw-txt">
-    <p class="dw-txt-heading">readme.txt</p>
+    
     <p class="dw-txt-rule">====================================</p>
+    <p></p>
     <p>expertise: backend & AI/ML</p>
     <p>differentiator: product</p>
     <p>hobby: UX design</p>
@@ -30,10 +31,6 @@ import Window from '../desktop/Window.astro';
     white-space: pre-wrap;
     min-height: 1.7em;
   }
-  .dw-txt-heading {
-    color: var(--text);
-    font-weight: 600;
-  }
   .dw-txt-rule {
     color: var(--muted);
     opacity: 0.55;
@@ -43,21 +40,5 @@ import Window from '../desktop/Window.astro';
     color: var(--muted);
     font-style: italic;
   }
-  .dw-txt-link {
-    display: inline;
-    background: none;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    font: inherit;
-    color: var(--accent);
-    text-decoration: underline;
-    text-decoration-color: rgba(76, 139, 245, 0.55);
-    text-underline-offset: 3px;
-    cursor: pointer;
-  }
-  .dw-txt-link:hover {
-    text-decoration-color: var(--accent);
-    filter: brightness(1.15);
-  }
+
 </style>

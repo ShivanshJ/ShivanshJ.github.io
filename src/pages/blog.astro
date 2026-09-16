@@ -4,14 +4,14 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Desktop from '../components/Desktop.astro';
+import { site } from '../data/site';
 
 const posts = (await getCollection('blog')).sort((a, b) =>
   b.data.date.localeCompare(a.data.date),
 );
 ---
-<Base title="Blog — Shivansh Jagga" description="Long-form writing on probability, systems, and design.">
+<Base title={`Blog — ${site.name}`} description="Long-form writing on probability, systems, and design.">
   <Desktop />
-  {/* Crawler-visible article links — hidden when JS runs */}
   <noscript>
     <main style="max-width:72ch;margin:0 auto;padding:48px 24px;font-family:sans-serif;color:#fff;background:#232323">
       <h1 style="font-size:2rem;margin-bottom:2rem">Blog</h1>

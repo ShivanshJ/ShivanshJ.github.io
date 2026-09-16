@@ -6,16 +6,14 @@
   /* Ported from edoardolunardi.dev — theme-bg + theme-fg + theme-dither */
   --bg: #232323;                       /* charcoal ground */
   --dither: #073642;                   /* dark teal — pattern on the wallpaper */
-  --text: #FFFFFF;                     /* --theme-fg */
-  --ink: #FFFFFF;                      /* alias */
+  --text: #FFFFFF;
   --surface: #2C2C2C;                  /* window bodies — 1 step lighter than bg */
   --surface-hover: #363636;
   --border: rgba(255, 255, 255, 0.16);
   --muted: rgba(255, 255, 255, 0.55);
-  --accent: #4C8BF5;                   /* signal blue — bright, crisp, readable on charcoal */
+  --accent: #4C8BF5;                   /* signal blue */
   --accent-soft: rgba(76, 139, 245, 0.14);
-  --paper: var(--surface);
-  --paper-hover: var(--surface-hover);
+  --accent-line: rgba(76, 139, 245, 0.4); /* underline / subtle border tint */
 }
 
 html {

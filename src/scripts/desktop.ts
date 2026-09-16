@@ -1,8 +1,19 @@
 // Window manager: open/close, focus (z-index), drag by titlebar,
 // traffic-light actions, dock/icon click routing.
+//
+// URL routing: windows listed in WINDOW_ROUTES get their path pushed to the
+// browser history on open and popped back to "/" on close. The blog window
+// also manages article-level URLs itself (see BlogWindow.astro).
 
 let zTop = 100;
 const openWindows = new Set<string>();
+
+// Map window IDs to their canonical URL paths.
+const WINDOW_ROUTES: Record<string, string> = { blog: '/blog' };
+
+// Layout constants — keep in sync with CSS.
+const MENUBAR_H = 28;  // height of the top menu bar
+const DOCK_GAP  = 90;  // space to leave above the dock
 
 // --- Sound: synthesized "open" chirp (no audio files needed) ---
 let audioCtx: AudioContext | null = null;
@@ -82,32 +93,28 @@ const bringToFront = (win: HTMLElement) => {
 const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
 
 const centerWindow = (win: HTMLElement) => {
-  if (isMobile()) return; // let CSS fill the viewport on mobile
+  if (isMobile()) return;
   if (win.dataset.maximized === 'true') return;
   const w = parseFloat(win.style.width) || win.offsetWidth || 640;
   const h = parseFloat(win.style.height) || win.offsetHeight || 440;
-  const menuBar = 28;
-  const dockGap = 90;
-  const availH = Math.max(0, window.innerHeight - menuBar - dockGap);
+  const availH = Math.max(0, window.innerHeight - MENUBAR_H - DOCK_GAP);
   const left = Math.max(8, (window.innerWidth - w) / 2);
-  const top = Math.max(menuBar + 8, menuBar + (availH - h) / 2);
+  const top = Math.max(MENUBAR_H + 8, MENUBAR_H + (availH - h) / 2);
   win.style.left = `${left}px`;
   win.style.top = `${top}px`;
 };
 
 // Pick a random on-screen position each time a window is opened fresh.
 const randomizeWindow = (win: HTMLElement) => {
-  if (isMobile()) return; // let CSS fill the viewport on mobile
+  if (isMobile()) return;
   if (win.dataset.maximized === 'true') return;
   const w = parseFloat(win.style.width) || win.offsetWidth || 640;
   const h = parseFloat(win.style.height) || win.offsetHeight || 440;
-  const menuBar = 28;
-  const dockGap = 90;
   const sidePad = 12;
   const minLeft = sidePad;
   const maxLeft = window.innerWidth - w - sidePad;
-  const minTop = menuBar + sidePad;
-  const maxTop = window.innerHeight - dockGap - h;
+  const minTop = MENUBAR_H + sidePad;
+  const maxTop = window.innerHeight - DOCK_GAP - h;
   const left = maxLeft < minLeft ? sidePad : Math.floor(minLeft + Math.random() * (maxLeft - minLeft + 1));
   const top = maxTop < minTop ? minTop : Math.floor(minTop + Math.random() * (maxTop - minTop + 1));
   win.style.left = `${left}px`;
@@ -147,7 +154,13 @@ const openWindow = (id: string, sourceEl?: HTMLElement) => {
   bringToFront(win);
   openWindows.add(id);
 
-  if (!wasOpen) playOpenSound();
+  if (!wasOpen) {
+    playOpenSound();
+    const route = WINDOW_ROUTES[id];
+    if (route && !location.pathname.startsWith(route)) {
+      history.pushState({ window: id }, '', route);
+    }
+  }
 
   if (sourceEl) {
     sourceEl.classList.add('is-bouncing');
@@ -166,6 +179,10 @@ const closeWindow = (id: string) => {
   if (!win) return;
   win.classList.remove('is-open');
   openWindows.delete(id);
+  const route = WINDOW_ROUTES[id];
+  if (route && location.pathname.startsWith(route)) {
+    history.pushState({}, '', '/');
+  }
 };
 
 const minimizeWindow = (id: string) => {
@@ -244,10 +261,8 @@ const init = () => {
     // Auto-open windows that ship with is-open
     if (win.classList.contains('is-open')) {
       const id = win.dataset.windowId;
-      // On mobile the readme takes over the whole viewport, which is a poor
-      // first impression — leave it closed and let the user tap to open it.
-      const isMobile = window.matchMedia('(max-width: 768px)').matches;
-      if (isMobile && id === 'readme') {
+      // On mobile the readme takes over the whole viewport — leave it closed.
+      if (isMobile() && id === 'readme') {
         win.classList.remove('is-open');
       } else {
         if (id) openWindows.add(id);

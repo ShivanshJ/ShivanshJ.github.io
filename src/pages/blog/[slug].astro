@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { site } from '../../data/site';
+import { readingTime, fmtDate } from '../../utils/blog';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -14,21 +15,9 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await post.render();
 
-const readingTime = (raw: string) => {
-  const words = raw.trim().split(/\s+/).length;
-  return `${Math.max(1, Math.round(words / 220))} min read`;
-};
-
-const fmtDate = (iso: string) => {
-  try {
-    return new Date(iso).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric',
-    });
-  } catch { return iso; }
-};
-
-const reading = readingTime(post.body ?? '');
-const canonicalUrl = `${site.url ?? 'https://shivanshj.github.io'}/blog/${post.slug}`;
+const reading = `${readingTime(post.body ?? '')} min read`;
+const date    = fmtDate(post.data.date, { year: 'numeric', month: 'long', day: 'numeric' });
+const canonicalUrl = `${site.url}/blog/${post.slug}`;
 ---
 
 <Base title={`${post.data.title} — ${site.name}`} description={post.data.description}>
@@ -46,7 +35,7 @@ const canonicalUrl = `${site.url ?? 'https://shivanshj.github.io'}/blog/${post.s
     <article class="article-body">
       <header class="article-header">
         <p class="article-kicker">
-          <time datetime={post.data.date}>{fmtDate(post.data.date)}</time>
+          <time datetime={post.data.date}>{date}</time>
           <span class="dot">·</span>
           <span>{reading}</span>
           <span class="dot">·</span>
@@ -58,7 +47,7 @@ const canonicalUrl = `${site.url ?? 'https://shivanshj.github.io'}/blog/${post.s
         )}
       </header>
 
-      <div class="prose">
+      <div class="article-prose">
         <Content />
       </div>
     </article>
@@ -140,42 +129,45 @@ const canonicalUrl = `${site.url ?? 'https://shivanshj.github.io'}/blog/${post.s
     text-wrap: pretty;
   }
 
-  .prose {
+  .article-prose {
     font-family: "Charter", "Iowan Old Style", Georgia, serif;
     font-size: 17px;
     line-height: 1.75;
     color: rgba(255, 255, 255, 0.88);
   }
 
-  .prose :global(h2),
-  .prose :global(h3),
-  .prose :global(h4) {
+  .article-prose :global(h2),
+  .article-prose :global(h3),
+  .article-prose :global(h4) {
     font-family: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
     color: var(--text);
     margin: 2em 0 0.6em;
     line-height: 1.25;
     letter-spacing: -0.01em;
   }
-  .prose :global(h2) { font-size: 1.45em; font-weight: 700; }
-  .prose :global(h3) { font-size: 1.2em; font-weight: 600; }
+  .article-prose :global(h2) { font-size: 1.45em; font-weight: 700; }
+  .article-prose :global(h3) { font-size: 1.2em; font-weight: 600; }
 
-  .prose :global(p) { margin: 0 0 1.4em; }
+  .article-prose :global(p) { margin: 0 0 1.4em; text-align: justify; hyphens: auto; }
 
-  .prose :global(a) {
+  .article-prose :global(a) {
     color: var(--accent);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
 
-  .prose :global(code) {
+  .article-prose :global(code) {
     font-family: "Geist Mono Variable", ui-monospace, monospace;
     font-size: 0.85em;
+    color: var(--accent);
     background: rgba(255, 255, 255, 0.08);
     border-radius: 4px;
     padding: 2px 5px;
   }
 
-  .prose :global(pre) {
+  .article-prose :global(.katex) { color: var(--accent); }
+
+  .article-prose :global(pre) {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -183,13 +175,14 @@ const canonicalUrl = `${site.url ?? 'https://shivanshj.github.io'}/blog/${post.s
     overflow-x: auto;
     margin: 1.6em 0;
   }
-  .prose :global(pre code) {
+  .article-prose :global(pre code) {
     background: none;
+    color: rgba(255, 255, 255, 0.92);
     padding: 0;
     font-size: 13px;
   }
 
-  .prose :global(blockquote) {
+  .article-prose :global(blockquote) {
     border-left: 3px solid var(--accent);
     margin: 1.6em 0;
     padding: 0.5em 0 0.5em 1.2em;
@@ -197,20 +190,20 @@ const canonicalUrl = `${site.url ?? 'https://shivanshj.github.io'}/blog/${post.s
     font-style: italic;
   }
 
-  .prose :global(table) {
+  .article-prose :global(table) {
     width: 100%;
     border-collapse: collapse;
     font-family: "Geist Mono Variable", ui-monospace, monospace;
     font-size: 13px;
     margin: 1.6em 0;
   }
-  .prose :global(th),
-  .prose :global(td) {
+  .article-prose :global(th),
+  .article-prose :global(td) {
     text-align: left;
     padding: 8px 12px;
     border-bottom: 1px solid var(--border);
   }
-  .prose :global(th) {
+  .article-prose :global(th) {
     color: var(--accent);
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -218,20 +211,20 @@ const canonicalUrl = `${site.url ?? 'https://shivanshj.github.io'}/blog/${post.s
     font-size: 11px;
   }
 
-  .prose :global(ul),
-  .prose :global(ol) {
+  .article-prose :global(ul),
+  .article-prose :global(ol) {
     padding-left: 1.5em;
     margin: 0 0 1.4em;
   }
-  .prose :global(li) { margin-bottom: 0.35em; }
+  .article-prose :global(li) { margin-bottom: 0.35em; }
 
-  .prose :global(hr) {
+  .article-prose :global(hr) {
     border: none;
     border-top: 1px solid var(--border);
     margin: 2.5em 0;
   }
 
-  .prose :global(strong) { color: var(--text); font-weight: 700; }
+  .article-prose :global(strong) { color: var(--text); font-weight: 700; }
 
   .article-footer {
     margin-top: 64px;

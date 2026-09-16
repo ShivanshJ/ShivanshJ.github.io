@@ -167,7 +167,7 @@
   gap: 4px;
   padding: 3px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(76, 139, 245, 0.4);
+  border: 1px solid var(--accent-line);
   background: rgba(76, 139, 245, 0.08);
   font-family: "Geist Mono Variable", ui-monospace, monospace;
   font-size: 11px;
@@ -258,7 +258,7 @@ a.dw-chip-link:hover {
 .dw-prose a {
   color: var(--accent);
   text-decoration: underline;
-  text-decoration-color: rgba(76, 139, 245, 0.4);
+  text-decoration-color: var(--accent-line);
   text-underline-offset: 3px;
 }
 .dw-prose a:hover { text-decoration-color: var(--accent); }
@@ -358,7 +358,7 @@ a.dw-chip-link:hover {
 .dw-blog-prose a {
   color: var(--accent);
   text-decoration: underline;
-  text-decoration-color: rgba(76, 139, 245, 0.4);
+  text-decoration-color: var(--accent-line);
   text-underline-offset: 3px;
 }
 .dw-blog-prose a:hover { text-decoration-color: var(--accent); }

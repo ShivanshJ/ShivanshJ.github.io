@@ -1,33 +1,20 @@
 ---
 import { getCollection } from 'astro:content';
 import Window from '../desktop/Window.astro';
+import { readingTime, fmtDate } from '../../utils/blog';
 
 const posts = (await getCollection('blog')).sort((a, b) => b.data.date.localeCompare(a.data.date));
 
-const readingTime = (raw: string) => {
-  const words = raw.trim().split(/\s+/).length;
-  const mins = Math.max(1, Math.round(words / 220));
-  return `${mins} min`;
-};
-
-// Pre-render every post so we can server-render all bodies and JS just
-// toggles visibility. Fast, keyboard-friendly, no fetch on switch.
+// Pre-render every post at build time so JS only toggles visibility — no
+// client-side fetch or re-render when switching articles.
 const rendered = await Promise.all(
   posts.map(async (p) => ({
     slug: p.slug,
     data: p.data,
-    reading: readingTime(p.body ?? ''),
+    reading: `${readingTime(p.body ?? '')} min`,
     Content: (await p.render()).Content,
   })),
 );
-
-const fmtDate = (iso: string) => {
-  try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      year: 'numeric', month: 'short', day: 'numeric',
-    });
-  } catch { return iso; }
-};
 ---
 <Window id="blog" title="Blog" x={40} y={40} width={1000} height={720} fullscreen>
   <div class="dw-blog">
@@ -42,6 +29,7 @@ const fmtDate = (iso: string) => {
               type="button"
               class={`dw-blog-sidebar-item ${i === 0 ? 'is-active' : ''}`}
               data-blog-index={i}
+              data-blog-slug={p.slug}
               role="option"
               aria-selected={i === 0}
             >
@@ -243,32 +231,62 @@ const fmtDate = (iso: string) => {
     color: rgba(255, 255, 255, 0.72);
     text-wrap: pretty;
   }
+  .dw-blog-prose :global(p) {
+    text-align: justify;
+    hyphens: auto;
+  }
 </style>
 
 <script>
-  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-blog-index]');
-  const panes = document.querySelectorAll<HTMLElement>('[data-blog-pane]');
-  const reader = document.querySelector<HTMLElement>('.dw-blog-reader');
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-blog-index]'));
+  const panes   = document.querySelectorAll<HTMLElement>('[data-blog-pane]');
+  const reader  = document.querySelector<HTMLElement>('.dw-blog-reader');
+
+  const slugFromPath = () =>
+    location.pathname.replace(/^\/blog\/?/, '').replace(/\/$/, '');
+
+  const selectByIndex = (idx: string, pushState = true) => {
+    const btn = buttons.find((b) => b.getAttribute('data-blog-index') === idx);
+    if (!btn) return;
+    if (pushState) {
+      const slug = btn.getAttribute('data-blog-slug') ?? '';
+      history.pushState({ blogSlug: slug }, '', slug ? `/blog/${slug}` : '/blog');
+    }
+    buttons.forEach((b) => {
+      const active = b === btn;
+      b.classList.toggle('is-active', active);
+      b.setAttribute('aria-selected', String(active));
+    });
+    panes.forEach((p) => {
+      const match = p.getAttribute('data-blog-pane') === idx;
+      if (match) p.removeAttribute('hidden');
+      else p.setAttribute('hidden', '');
+    });
+    if (reader) reader.scrollTop = 0;
+  };
 
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
       const idx = btn.getAttribute('data-blog-index');
       if (idx === null) return;
-      if (!btn.classList.contains('is-active')) {
-        (window as any).__dwChirp?.();
-      }
-      buttons.forEach((b) => {
-        const active = b === btn;
-        b.classList.toggle('is-active', active);
-        b.setAttribute('aria-selected', String(active));
-      });
-      panes.forEach((p) => {
-        const match = p.getAttribute('data-blog-pane') === idx;
-        if (match) p.removeAttribute('hidden');
-        else p.setAttribute('hidden', '');
-      });
-      // scroll reader back to top on switch
-      if (reader) reader.scrollTop = 0;
+      if (!btn.classList.contains('is-active')) (window as any).__dwChirp?.();
+      selectByIndex(idx);
     });
+  });
+
+  // On load: if URL is /blog/<slug>, pre-select that article.
+  const initSlug = slugFromPath();
+  if (initSlug) {
+    const btn = buttons.find((b) => b.getAttribute('data-blog-slug') === initSlug);
+    const idx = btn?.getAttribute('data-blog-index');
+    if (idx) selectByIndex(idx, false);
+  }
+
+  // Sync article selection on browser back/forward.
+  window.addEventListener('popstate', (e) => {
+    const slug = (e.state as any)?.blogSlug ?? slugFromPath();
+    const btn = slug ? buttons.find((b) => b.getAttribute('data-blog-slug') === slug) : buttons[0];
+    const idx = btn?.getAttribute('data-blog-index');
+    if (idx) selectByIndex(idx, false);
   });
 </script>
