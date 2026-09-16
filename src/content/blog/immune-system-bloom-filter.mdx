@@ -1,0 +1,53 @@
+---
+title: "The immune system's Bloom filter"
+date: "2026-09-16"
+description: "A Bloom filter never lies when it says no. Your immune system works the same way — and both pay for it with the occasional false alarm."
+topic: "science"
+---
+
+Every second, your immune system checks millions of molecules for one thing: is this foreign? It can't keep a lookup table — the space of possible pathogens is too large, and most haven't been seen before. Instead, it runs something computer scientists invented in 1970 and have been using ever since.
+
+It's called a **Bloom filter**.
+
+## Definitely not, probably yes
+
+A Bloom filter answers one question: *is this item in the set?* It gives back one of two answers — "definitely not" or "probably yes." The first is always correct. The second can be wrong.
+
+Here's how it works. Imagine a row of 8 light switches, all off. You have two hash functions — call them H1 and H2. Each takes any input and spits out a number from 1 to 8. To add the word "apple":
+
+- H1("apple") = 3 → flip switch 3 on
+- H2("apple") = 7 → flip switch 7 on
+
+Now add "banana":
+
+- H1("banana") = 1 → flip switch 1 on
+- H2("banana") = 3 → switch 3 is already on, no change
+
+To check if "cherry" is in the set:
+
+- H1("cherry") = 5 → switch 5 is **off** → definitely not in the set
+
+To check "grape":
+
+- H1("grape") = 1 → on
+- H2("grape") = 7 → on
+
+Both on — "grape" is *probably* in the set. But we never added "grape." Switch 1 was flipped by "banana," switch 7 by "apple." The filter has no way to distinguish a real match from a collision.
+
+![Bloom filter — bits flipped by two hash functions](/blog/bloom-filter-basic.png)
+
+**The filter never stores the items themselves — just a smear of fingerprints.** You trade certainty for speed and space. That tradeoff makes sense whenever false positives are tolerable and false negatives are catastrophic: cache layers, network routers, database index skipping.
+
+## The same bet, in biology
+
+Your body generates roughly 10¹⁸ distinct lymphocyte receptor configurations via [V(D)J recombination](https://en.wikipedia.org/wiki/V(D)J_recombination) — random gene segments shuffled into molecular shapes. Each lymphocyte is effectively a hash function: it maps molecular geometry to a binary output, binds or doesn't bind.
+
+When a pathogen enters, it's checked against the whole repertoire in parallel. If any cell binds strongly enough, the system flags the molecule as probably foreign and mounts a response. If nothing binds, the molecule is treated as self. Same structure as the filter: "definitely not" is reliable, "probably yes" is not.
+
+The false positive rate is real. Your tissue occasionally shares molecular shapes with pathogens. A receptor tuned for a bacterium sometimes fits just well enough on a thyroid protein. That's autoimmunity — a Bloom filter false positive, paid in inflammation.
+
+After a real threat is confirmed, clonal expansion produces more copies of the matching cells, some of which persist as long-lived memory cells. The filter densifies around patterns it has seen. That's your flu shot.
+
+Add enough items to a Bloom filter and you flip so many bits that everything starts returning "probably yes." The immune system's version of that failure mode is a cytokine storm.
+
+**Both systems are engineered to make false negatives impossible at the cost of letting false positives exist.** Biology and computer science landed on the same design independently — which is usually a sign the tradeoff is the only reasonable one.

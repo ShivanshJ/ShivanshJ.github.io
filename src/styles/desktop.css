@@ -316,25 +316,30 @@ a.dw-chip-link:hover {
   vertical-align: baseline;
 }
 
-/* --- Blog reading prose (editorial serif for long-form) ------------- */
-.dw-blog-prose {
-  max-width: 68ch;
-  margin: 0 auto;
+/* ─── Blog prose: canonical typography shared by all render contexts ─────────
+   Both BlogWindow (.dw-blog-prose.blog-prose) and the static article page
+   (.article-prose.blog-prose) carry the .blog-prose class. All typography
+   lives here. Context wrappers (.dw-blog-prose / .article-prose) hold layout
+   overrides only (max-width, padding, etc.).
+   ──────────────────────────────────────────────────────────────────────────── */
+.blog-prose {
   font-family: "Charter", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   font-size: 18px;
   line-height: 1.72;
   color: rgba(255, 255, 255, 0.90);
 }
-.dw-blog-prose p {
+.blog-prose p {
   margin: 0 0 1.2em;
   text-wrap: pretty;
   hanging-punctuation: first;
+  text-align: justify;
+  hyphens: auto;
 }
-.dw-blog-prose p:last-child { margin-bottom: 0; }
-.dw-blog-prose h1,
-.dw-blog-prose h2,
-.dw-blog-prose h3,
-.dw-blog-prose h4 {
+.blog-prose p:last-child { margin-bottom: 0; }
+.blog-prose h1,
+.blog-prose h2,
+.blog-prose h3,
+.blog-prose h4 {
   font-family: "Charter", "Iowan Old Style", Georgia, serif;
   font-weight: 700;
   color: var(--text);
@@ -342,10 +347,10 @@ a.dw-chip-link:hover {
   line-height: 1.2;
   margin: 2em 0 0.5em;
 }
-.dw-blog-prose h2 { font-size: 26px; }
-.dw-blog-prose h3 { font-size: 21px; }
-.dw-blog-prose h4 { font-size: 18px; }
-.dw-blog-prose h2::before {
+.blog-prose h2 { font-size: 26px; }
+.blog-prose h3 { font-size: 21px; }
+.blog-prose h4 { font-size: 18px; }
+.blog-prose h2::before {
   content: "";
   display: inline-block;
   width: 8px;
@@ -354,43 +359,38 @@ a.dw-chip-link:hover {
   margin-right: 12px;
   vertical-align: 0.15em;
 }
-
-.dw-blog-prose a {
+.blog-prose a {
   color: var(--accent);
   text-decoration: underline;
   text-decoration-color: var(--accent-line);
   text-underline-offset: 3px;
 }
-.dw-blog-prose a:hover { text-decoration-color: var(--accent); }
-
-.dw-blog-prose strong { color: #FFFFFF; font-weight: 700; }
-.dw-blog-prose em { color: rgba(255, 255, 255, 0.95); }
-.dw-blog-prose b {
+.blog-prose a:hover { text-decoration-color: var(--accent); }
+.blog-prose strong { color: #FFFFFF; font-weight: 700; }
+.blog-prose em { color: rgba(255, 255, 255, 0.95); }
+.blog-prose b {
   color: var(--accent);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
-
-.dw-blog-prose ul,
-.dw-blog-prose ol {
+.blog-prose ul,
+.blog-prose ol {
   margin: 0 0 1.2em;
   padding-left: 1.6em;
 }
-.dw-blog-prose li {
+.blog-prose li {
   margin: 0 0 0.5em;
   text-wrap: pretty;
 }
-.dw-blog-prose ul li::marker { color: var(--accent); }
-
-.dw-blog-prose blockquote {
+.blog-prose ul li::marker { color: var(--accent); }
+.blog-prose blockquote {
   margin: 1.5em 0;
   padding: 0.4em 0 0.4em 1.4em;
   border-left: 3px solid var(--accent);
   font-style: italic;
   color: rgba(255, 255, 255, 0.82);
 }
-
-.dw-blog-prose code {
+.blog-prose code {
   font-family: "Geist Mono Variable", ui-monospace, Menlo, monospace;
   font-size: 0.88em;
   padding: 2px 6px;
@@ -398,7 +398,7 @@ a.dw-chip-link:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--accent);
 }
-.dw-blog-prose pre {
+.blog-prose pre:not(.ascii-image-pre) {
   margin: 1.5em 0;
   padding: 16px 20px;
   border: 1px solid var(--border);
@@ -408,59 +408,101 @@ a.dw-chip-link:hover {
   font-size: 13px;
   line-height: 1.5;
 }
-.dw-blog-prose pre code {
+.blog-prose pre:not(.ascii-image-pre) code {
   background: transparent;
   color: rgba(255, 255, 255, 0.92);
   padding: 0;
   font-size: inherit;
 }
+.blog-prose .katex { color: var(--accent); }
+.blog-prose > :first-child { margin-top: 0; }
 
-.dw-blog-prose img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  margin: 1.5em auto;
-  border: 1px solid var(--border);
-  /* If we adopt the 1-bit dither filter later, add:
-     filter: url(#dither-1bit); */
+/* Layout overrides per context — no typography here */
+.dw-blog-prose {
+  max-width: 68ch;
+  margin: 0 auto;
 }
 
-.dw-blog-prose hr {
+/* ─── Blog image: ASCII art ──────────────────────────────────────────────────
+   Both render contexts share the .blog-prose class, so styles here apply to
+   BlogWindow (.dw-blog-prose.blog-prose) and the static article page
+   (.article-prose.blog-prose) automatically. ascii-image.ts targets
+   .blog-prose p > img and injects .ascii-image-wrap in place of <p><img></p>.
+   ──────────────────────────────────────────────────────────────────────────── */
+.ascii-image-wrap {
+  position: relative;
+  margin: 2em 0;
+  overflow: hidden;
+  line-height: 0;
+  cursor: zoom-in;
+}
+
+/* Photo is hidden by default; fades in on hover. Fills the wrap which is
+   sized to the ASCII grid, so object-fit:cover fills without cropping much. */
+.ascii-image-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 350ms ease;
+}
+
+.ascii-image-wrap:hover img { opacity: 1; }
+
+/* ASCII layer — absolutely covers the wrap; transparent bg so page bg shows through spaces */
+.ascii-image-pre {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  font-family: "Geist Mono Variable", ui-monospace, monospace;
+  white-space: pre;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.92);
+  background: transparent;
+  overflow: hidden;
+  transition: opacity 350ms ease;
+  pointer-events: none;
+}
+
+.ascii-image-wrap:hover .ascii-image-pre { opacity: 0; }
+.ascii-image-wrap:hover { cursor: zoom-out; }
+
+.blog-prose hr {
   border: 0;
   height: 1px;
   background: var(--border);
   margin: 2em 0;
 }
 
-.dw-blog-prose table {
+.blog-prose table {
   width: 100%;
   border-collapse: collapse;
   margin: 1.5em 0;
   font-size: 0.95em;
   border: 1px solid var(--border);
 }
-.dw-blog-prose thead {
+.blog-prose thead {
   background: rgba(76, 139, 245, 0.06);
 }
-.dw-blog-prose th,
-.dw-blog-prose td {
+.blog-prose th,
+.blog-prose td {
   padding: 10px 14px;
   text-align: left;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
 }
-.dw-blog-prose th {
+.blog-prose th {
   font-weight: 700;
   color: var(--text);
   letter-spacing: 0.01em;
 }
-.dw-blog-prose th + th,
-.dw-blog-prose td + td {
+.blog-prose th + th,
+.blog-prose td + td {
   border-left: 1px solid var(--border);
 }
-.dw-blog-prose tbody tr:last-child td { border-bottom: 0; }
-
-.dw-blog-prose > :first-child { margin-top: 0; }
+.blog-prose tbody tr:last-child td { border-bottom: 0; }
 
 /* Mobile blog: sidebar becomes a horizontal strip like Work */
 @media (max-width: 768px) {
@@ -479,6 +521,6 @@ a.dw-chip-link:hover {
   .dw-blog-reader {
     padding: 24px 20px 60px !important;
   }
-  .dw-blog-prose { font-size: 16px; }
+  .dw-blog-prose.blog-prose { font-size: 16px; }
   .dw-blog-post-title { font-size: 26px !important; }
 }

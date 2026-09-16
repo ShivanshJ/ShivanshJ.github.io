@@ -7,7 +7,6 @@ export const site = {
   tagline: 'built AI agent infra · shipped products that got revenue',
 
   email: 'shivujagga@gmail.com',
-  phone: '+1 (646) 639-1770',
   github: 'https://github.com/ShivanshJ',
   linkedin: 'https://linkedin.com/in/ShivanshJ',
   behance: 'https://www.behance.net/ShivanshJ',

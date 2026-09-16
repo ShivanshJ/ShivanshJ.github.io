@@ -3,9 +3,7 @@
 @tailwind utilities;
 
 :root {
-  /* Ported from edoardolunardi.dev — theme-bg + theme-fg + theme-dither */
   --bg: #232323;                       /* charcoal ground */
-  --dither: #073642;                   /* dark teal — pattern on the wallpaper */
   --text: #FFFFFF;
   --surface: #2C2C2C;                  /* window bodies — 1 step lighter than bg */
   --surface-hover: #363636;
@@ -45,6 +43,7 @@ body {
   margin-left: 2px;
   vertical-align: baseline;
 }
+
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

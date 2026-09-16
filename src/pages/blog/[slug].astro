@@ -47,7 +47,7 @@ const canonicalUrl = `${site.url}/blog/${post.slug}`;
         )}
       </header>
 
-      <div class="article-prose">
+      <div class="article-prose blog-prose">
         <Content />
       </div>
     </article>
@@ -129,102 +129,7 @@ const canonicalUrl = `${site.url}/blog/${post.slug}`;
     text-wrap: pretty;
   }
 
-  .article-prose {
-    font-family: "Charter", "Iowan Old Style", Georgia, serif;
-    font-size: 17px;
-    line-height: 1.75;
-    color: rgba(255, 255, 255, 0.88);
-  }
-
-  .article-prose :global(h2),
-  .article-prose :global(h3),
-  .article-prose :global(h4) {
-    font-family: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-    color: var(--text);
-    margin: 2em 0 0.6em;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-  }
-  .article-prose :global(h2) { font-size: 1.45em; font-weight: 700; }
-  .article-prose :global(h3) { font-size: 1.2em; font-weight: 600; }
-
-  .article-prose :global(p) { margin: 0 0 1.4em; text-align: justify; hyphens: auto; }
-
-  .article-prose :global(a) {
-    color: var(--accent);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  .article-prose :global(code) {
-    font-family: "Geist Mono Variable", ui-monospace, monospace;
-    font-size: 0.85em;
-    color: var(--accent);
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
-    padding: 2px 5px;
-  }
-
-  .article-prose :global(.katex) { color: var(--accent); }
-
-  .article-prose :global(pre) {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px 24px;
-    overflow-x: auto;
-    margin: 1.6em 0;
-  }
-  .article-prose :global(pre code) {
-    background: none;
-    color: rgba(255, 255, 255, 0.92);
-    padding: 0;
-    font-size: 13px;
-  }
-
-  .article-prose :global(blockquote) {
-    border-left: 3px solid var(--accent);
-    margin: 1.6em 0;
-    padding: 0.5em 0 0.5em 1.2em;
-    color: var(--muted);
-    font-style: italic;
-  }
-
-  .article-prose :global(table) {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: "Geist Mono Variable", ui-monospace, monospace;
-    font-size: 13px;
-    margin: 1.6em 0;
-  }
-  .article-prose :global(th),
-  .article-prose :global(td) {
-    text-align: left;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .article-prose :global(th) {
-    color: var(--accent);
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-size: 11px;
-  }
-
-  .article-prose :global(ul),
-  .article-prose :global(ol) {
-    padding-left: 1.5em;
-    margin: 0 0 1.4em;
-  }
-  .article-prose :global(li) { margin-bottom: 0.35em; }
-
-  .article-prose :global(hr) {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 2.5em 0;
-  }
-
-  .article-prose :global(strong) { color: var(--text); font-weight: 700; }
+  /* Typography comes from .blog-prose in desktop.css — no overrides here */
 
   .article-footer {
     margin-top: 64px;
@@ -232,3 +137,7 @@ const canonicalUrl = `${site.url}/blog/${post.slug}`;
     border-top: 1px solid var(--border);
   }
 </style>
+
+<script>
+  import '../../scripts/ascii-image.ts';
+</script>

@@ -69,7 +69,7 @@ const rendered = await Promise.all(
             )}
           </header>
 
-          <div class="dw-blog-prose">
+          <div class="dw-blog-prose blog-prose">
             <p.Content />
           </div>
         </article>
@@ -231,13 +231,12 @@ const rendered = await Promise.all(
     color: rgba(255, 255, 255, 0.72);
     text-wrap: pretty;
   }
-  .dw-blog-prose :global(p) {
-    text-align: justify;
-    hyphens: auto;
-  }
+
 </style>
 
 <script>
+  import '../../scripts/ascii-image.ts';
+
   const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-blog-index]'));
   const panes   = document.querySelectorAll<HTMLElement>('[data-blog-pane]');
   const reader  = document.querySelector<HTMLElement>('.dw-blog-reader');

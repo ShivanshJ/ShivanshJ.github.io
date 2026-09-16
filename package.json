@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "prerender:ascii": "node scripts/ascii-prerender.mjs",
+    "build": "node scripts/ascii-prerender.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "deploy:worker": "cd worker && npm run deploy"
