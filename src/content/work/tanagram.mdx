@@ -4,8 +4,8 @@ role: "Co-founder & CTO"
 startDate: "Feb 2025"
 endDate: "Current"
 location: "San Francisco, CA (Remote)"
-highlight: "Raised $4.6M · built guardrails for AI agents"
-stack: ["Python", "FastAPI", "Go", "gRPC", "AWS", "Inngest", "KimiK2.6", "Docker"]
+highlight: "Raised $4.6M · real-time AI PR enforcement pipeline"
+stack: ["Python", "FastAPI", "Go", "gRPC", "PostgreSQL", "AWS", "Inngest", "Anthropic", "Kimi K2", "MLflow", "Sentry", "Docker"]
 backers:
   - name: "Decibel Partners"
     url: "https://decibel.vc"
@@ -14,13 +14,14 @@ backers:
 metrics:
   - { value: "$4.6M", label: "raised" }
   - { value: "5", label: "engineers led" }
-  - { value: "0→1", label: "built" }
+  - { value: "0→1", label: "custom eval DSL" }
 order: 1
 ---
 
-- Raised <b>$4.6M</b> from Decibel Partners & PearVC.
-- Led a team of <b>5 engineers</b> across ML, Data Pipelines, Backend, and AI-native use cases.
-- Led both the engineering and product roadmap — use cases like static analysis of codebases and building knowledge graphs.
-- Sales & client success with principal engineers at leading GenAI model-development companies like <b>RunwayML</b>.
-- Built AI <b>eval datasets, benchmarking, and observability</b> into LLM tool-call traces with Opik & Databricks.
-- Built 0→1 and scaled AI-agent infrastructure on AWS with Inngest workflow orchestration as a MessageQueue.
+- Raised <b>$4.6M</b> (Decibel Partners, PearVC) and shipped a GitHub App for AI-driven PR enforcement — coding rules enforced on every pull request, automatically learned from your org's Slack channels and code review history.
+- Architected a fault-tolerant, event-driven enforcement pipeline: HMAC-validated GitHub webhook ingress → Inngest async orchestration → concurrent LLM-based policy evaluation against a cloned repo checkout → real-time GitHub check-run updates, with retries and idempotency at every stage.
+- Designed a policy compilation engine that transpiles natural-language rules into <b>per-repository TQL artifacts</b> — enforcement gates on successful per-repo rewrite, preventing partial policy application across multi-repo organizations.
+- Built the rule-discovery pipeline: multi-source mining of Slack channels and PR review comments to build company-specific coding rule artifacts, promoted through a staged review flow into live enforced policies.
+- Integrated LLM observability end-to-end — Sentry spans for cost/token telemetry, MLflow for eval tracking, Opik & Databricks for benchmarking — enabling model-selection decisions and per-policy latency profiling.
+- Built an <b>online and offline eval infrastructure</b> — online evals score policy violations in real-time on every PR check; offline evals run curated LLM tool-call trace datasets through Opik & Databricks with MLflow tracking, enabling regression testing and data-driven model selection.
+- Closed design partnerships with principal engineers at <b>RunwayML</b>; hired and led <b>5 engineers</b> across ML, data pipelines, and backend infra — owned the full technical roadmap from 0 to production.
