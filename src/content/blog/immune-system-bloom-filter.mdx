@@ -1,5 +1,5 @@
 ---
-title: "Immune system's Bloom filter"
+title: "Immune system's Bloom filter: causes allergy!"
 date: "2026-09-16"
 description: "A Bloom filter in computer science: either says definitely not or probably yes. And our immune system works the same way — and both pay for it with the occasional false alarm."
 topic: "science"
@@ -11,17 +11,24 @@ It's called a **Bloom filter**.
 
 ## Definitely not, probably yes
 
-A Bloom filter answers one question: *is this item in the set?* It gives back one of two answers — "definitely not" or "probably yes." The first is always correct. The second can be wrong.
+A Bloom filter answers one question: *do I have an item in my set?* It gives back one of two answers — "definitely not" or "maybe yes." The first is always correct. The second is a 'maybe'.
 
-Here's how it works. Imagine a row of 8 light switches, all off. You have two hash functions — call them H1 and H2. Each takes any input and spits out a number from 1 to 8. To add the word "apple":
+So when a pathogen enters our immune system essentially says:
+The "Definitely No" (No Match) 
+When a completely new virus enters your body, your immune system's existing memory cells look at it and say, "We have absolutely no record of this." Because it's a "no," your body knows it has to start from scratch to build a brand-new defense.
 
-- H1("apple") = 3 → flip switch 3 on
-- H2("apple") = 7 → flip switch 7 on
+The "Probably Yes" (The False Alarm)
+Your immune system doesn't memorize entire viruses; it only memorizes a tiny snapshot of their surface (an antigen). Sometimes, a harmless substance—like pollen, peanuts, or cat dander—accidently matches the snapshot of a dangerous pathogen. Your immune system yells, "I know this enemy!" and launches a massive attack. This "false positive" is what we call an allergy.
 
-Now add "banana":
+Here's how a bloom filter works. Imagine a row of 8 light switches, all off. You have two hash functions — call them H1 and H2. Each takes any input and spits out a number from 1 to 8. To add the word "apple":
 
-- H1("banana") = 1 → flip switch 1 on
-- H2("banana") = 3 → switch 3 is already on, no change
+- H1("Influenza") = 3 → flip switch 3 on
+- H2("Influenza") = 7 → flip switch 7 on
+
+Now add "Rhinovirus":
+
+- H1("Rhinovirus") = 1 → flip switch 1 on
+- H2("Rhinovirus") = 3 → switch 3 is already on, no change
 
 To check if "cherry" is in the set:
 
@@ -32,13 +39,15 @@ To check "grape":
 - H1("grape") = 1 → on
 - H2("grape") = 7 → on
 
-Both on — "grape" is *probably* in the set. But we never added "grape." Switch 1 was flipped by "banana," switch 7 by "apple." The filter has no way to distinguish a real match from a collision.
+Both on — "grape" is *probably* in the set. 
+And boom - allergy by that grape!
+But we never added "grape." Switch 1 was flipped by "Rhinovirus," switch 7 by "Influenza." The filter has no way to distinguish a real match from a collision.
 
 ![Bloom filter — bits flipped by two hash functions](/blog/bloom-filter-basic.png)
 
 **The filter never stores the items themselves — just a smear of fingerprints.** You trade certainty for speed and space. That tradeoff makes sense whenever false positives are tolerable and false negatives are catastrophic: cache layers, network routers, database index skipping.
 
-## The same bet, in biology
+## The same bet, in biology + a little auto-immunity
 
 Your body generates roughly 10¹⁸ distinct lymphocyte receptor configurations via [V(D)J recombination](https://en.wikipedia.org/wiki/V(D)J_recombination) — random gene segments shuffled into molecular shapes. Each lymphocyte is effectively a hash function: it maps molecular geometry to a binary output, binds or doesn't bind.
 
