@@ -13,11 +13,12 @@ It's called a **Bloom filter**.
 
 A Bloom filter answers one question: *do I have an item in my set?* It gives back one of two answers — "definitely not" or "maybe yes." The first is always correct. The second is a 'maybe'.
 
-So when a pathogen enters our immune system essentially says:
-The "Definitely No" (No Match) 
+So when a pathogen enters, our immune system essentially says two things:
+
+1. The "Definitely No" (No Match) 
 When a completely new virus enters your body, your immune system's existing memory cells look at it and say, "We have absolutely no record of this." Because it's a "no," your body knows it has to start from scratch to build a brand-new defense.
 
-The "Probably Yes" (The False Alarm)
+2. The "Probably Yes" (The False Alarm) 
 Your immune system doesn't memorize entire viruses; it only memorizes a tiny snapshot of their surface (an antigen). Sometimes, a harmless substance—like pollen, peanuts, or cat dander—accidently matches the snapshot of a dangerous pathogen. Your immune system yells, "I know this enemy!" and launches a massive attack. This "false positive" is what we call an allergy.
 
 Here's how a bloom filter works. Imagine a row of 8 light switches, all off. You have two hash functions — call them H1 and H2. Each takes any input and spits out a number from 1 to 8. To add the word "apple":
