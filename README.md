@@ -5,7 +5,7 @@ metaphor with draggable windows and a WebGL dithered wallpaper. Deploys
 to GitHub Pages on every push to `main`. Analytics runs on a separate
 Cloudflare Worker.
 
-Live: **https://shivanshj.github.io/**
+Live: **https://shivanshj.github.io/?cmp=github-repo**
 
 ---
 
