@@ -1,0 +1,50 @@
+---
+title: "The opening act: agent harness"
+date: "2026-10-13"
+description: "Same model, same prompt, same API — one agent used 11,000 tokens and took 7 seconds, the other used 6,000 and took 2.6. The difference isn't the model. It's the harness."
+topic: "tech"
+---
+
+I sent two AI agents the same prompt. Same model — `qwen/qwen3-32b` via OpenRouter — same hardware, same network. One came back in 2.6 seconds. The other took 7, and spent nearly twice the tokens doing it.
+
+The model didn't cause that gap. The *harness* did.
+
+**A harness is everything that wraps the model** — the system prompt, the tool definitions, the memory scaffolding, the agentic loop logic. When you ask an agent to do anything, the harness loads its entire context window before your prompt arrives. Your task is the last thing it reads, not the first.
+
+I ran two side by side: [Hermes Agent](https://github.com/NousResearch/hermes) (NousResearch, Python) and DeepSeek's [`dsh`](https://github.com/deepseek-ai/dsh-superagent-prototype), routed through a local proxy so I could count every token on every call.
+
+## Task 1: reply with "OK"
+
+The simplest possible prompt — *"Reply with exactly the word: OK."* No tools, no files, no reasoning required.
+
+![](/blog/harness-trivial-task.png)
+
+Hermes makes **one** LLM call. It loads 11,146 input tokens upfront — system prompt, tool specs, memory instructions, loop scaffolding — before it reads your 10-word prompt. Front-loaded, but predictable: that upfront cost is the same whether your task is one step or ten.
+
+DSH makes **two** calls. The first is a 154-token bootstrap — a minimal call to interpret the task and emit a structured goal. The second loads the full agent context (5,885 tokens) and executes. Leaner per call, more roundtrips.
+
+## Task 2: create a file, read it back, confirm
+
+*"Create a file called hello.txt containing the text 'hello world', then read it back and confirm the content."*
+
+| Metric | Hermes | DeepSeek |
+|---|---|---|
+| Steps (LLM calls) | 2 | 4 |
+| Input tokens | 23,054 | 18,097 |
+| Output tokens | 533 | 79 |
+| Input tokens / step | 11,527 | 4,524 |
+| Output tokens / step | 266.5 | 19.8 |
+| Est. cost (USD) | $0.00199 | $0.00147 |
+| Wall-clock | 27.2s | 5.8s |
+
+Hermes completes in 2 steps (plan + execute). DSH takes 4 (goal → write → read → confirm). Total token counts look closer (23K vs 18K), but wall-clock splits wide: 27 seconds against 5.8.
+
+Here is what I got wrong when I first looked at this: I called Hermes "flat-profile" because its context looked stable across runs. It isn't. Both harnesses grow their context window with every step — they just grow at different rates. Hermes adds roughly 450 tokens per step (the tool result re-injected into the prompt). DSH adds around 75. At 50 steps, Hermes would be at around 33,000 tokens per call; DSH around 9,600.
+
+Hermes front-loads cost and grows fast per step. DSH starts tiny and grows slow. Neither is better — they are different bets on what your workload looks like:
+
+- **Short tasks (1–3 steps):** DSH's lean context wins clearly. Hermes pays the full upfront cost for work it barely uses.
+- **Long tasks (10+ steps):** Hermes's large but stable starting context starts paying back. DSH's small-but-compounding growth catches up and eventually overtakes it.
+- **Latency-sensitive work:** DSH's sub-second per-step calls are hard to match. Hermes's single-call structure helps when you're counting roundtrips, not total time.
+
+The model you pick shapes the quality of every answer. The harness you pick shapes how much you spend to get there — and that bill opens before your first word lands.
